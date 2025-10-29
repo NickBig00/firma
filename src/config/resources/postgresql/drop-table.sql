@@ -1,6 +1,0 @@
-SET search_path TO 'firma';
-
-DROP TABLE IF EXISTS firma_file CASCADE;
-DROP TABLE IF EXISTS standort CASCADE;
-DROP TABLE IF EXISTS geschaeftsfuehrer CASCADE;
-DROP TABLE IF EXISTS firma CASCADE;
