@@ -13,10 +13,17 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
--- https://www.postgresql.org/docs/devel/app-psql.html
--- https://www.postgresql.org/docs/current/ddl-schemas.html
--- https://www.postgresql.org/docs/current/ddl-schemas.html#DDL-SCHEMAS-CREATE
--- "user-private schema" (Default-Schema: public)
-CREATE SCHEMA IF NOT EXISTS AUTHORIZATION buch;
+-- https://www.postgresql.org/docs/current/sql-createuser.html
+-- https://www.postgresql.org/docs/current/sql-createrole.html
+CREATE USER firma PASSWORD 'p';
 
-ALTER ROLE buch SET search_path = 'buch';
+-- https://www.postgresql.org/docs/current/sql-createdatabase.html
+CREATE DATABASE firma;
+
+-- https://www.postgresql.org/docs/current/role-attributes.html
+-- https://www.postgresql.org/docs/current/ddl-priv.html
+-- https://www.postgresql.org/docs/current/sql-grant.html
+GRANT ALL ON DATABASE firma TO firma;
+
+-- https://www.postgresql.org/docs/current/sql-createtablespace.html
+CREATE TABLESPACE firmaspace OWNER firma LOCATION '/var/lib/postgresql/tablespace/firma';
