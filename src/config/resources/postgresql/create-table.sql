@@ -1,107 +1,51 @@
--- Copyright (C) 2022 - present Juergen Zimmermann, Hochschule Karlsruhe
---
--- This program is free software: you can redistribute it and/or modify
--- it under the terms of the GNU General Public License as published by
--- the Free Software Foundation, either version 3 of the License, or
--- (at your option) any later version.
---
--- This program is distributed in the hope that it will be useful,
--- but WITHOUT ANY WARRANTY; without even the implied warranty of
--- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
--- GNU General Public License for more details.
---
--- You should have received a copy of the GNU General Public License
--- along with this program.  If not, see <https://www.gnu.org/licenses/>.
+SET default_tablespace = firmaspace;
 
--- Aufruf:
--- docker compose exec db bash
--- psql --dbname=buch --username=buch --file=/sql/create-table.sql
+CREATE SCHEMA IF NOT EXISTS AUTHORIZATION firma;
+ALTER ROLE firma SET search_path = 'firma';
+SET search_path TO 'firma';
 
--- text statt varchar(n):
--- "There is no performance difference among these three types, apart from a few extra CPU cycles
--- to check the length when storing into a length-constrained column"
--- ggf. CHECK(char_length(nachname) <= 255)
 
--- Indexe auflisten:
--- psql --dbname=buch --username=buch
---  SELECT   tablename, indexname, indexdef, tablespace
---  FROM     pg_indexes
---  WHERE    schemaname = 'buch'
---  ORDER BY tablename, indexname;
---  \q
-
--- https://www.postgresql.org/docs/current/manage-ag-tablespaces.html
-SET default_tablespace = buchspace;
-
--- https://www.postgresql.org/docs/current/app-psql.html
--- https://www.postgresql.org/docs/current/ddl-schemas.html
--- https://www.postgresql.org/docs/current/ddl-schemas.html#DDL-SCHEMAS-CREATE
--- "user-private schema" (Default-Schema: public)
-CREATE SCHEMA IF NOT EXISTS AUTHORIZATION buch;
-
-ALTER ROLE buch SET search_path = 'buch';
-set search_path to 'buch';
-
--- https://www.postgresql.org/docs/current/sql-createtype.html
--- https://www.postgresql.org/docs/current/datatype-enum.html
-CREATE TYPE buchart AS ENUM ('EPUB', 'HARDCOVER', 'PAPERBACK');
-
--- https://www.postgresql.org/docs/current/sql-createtable.html
--- https://www.postgresql.org/docs/current/datatype.html
-CREATE TABLE IF NOT EXISTS buch (
-                  -- https://www.postgresql.org/docs/current/datatype-numeric.html#DATATYPE-INT
-                  -- https://www.postgresql.org/docs/current/ddl-constraints.html#DDL-CONSTRAINTS-PRIMARY-KEYS
-                  -- impliziter Index fuer Primary Key
-                  -- "GENERATED ALWAYS AS IDENTITY" gemaess SQL-Standard
-                  -- entspricht SERIAL mit generierter Sequenz buch_id_seq
+CREATE TABLE IF NOT EXISTS firma (
     id            integer GENERATED ALWAYS AS IDENTITY(START WITH 1000) PRIMARY KEY,
-                  -- https://www.postgresql.org/docs/current/ddl-constraints.html#id-1.5.4.6.6
     version       integer NOT NULL DEFAULT 0,
-                  -- impliziter Index als B-Baum durch UNIQUE
-                  -- https://www.postgresql.org/docs/current/ddl-constraints.html#DDL-CONSTRAINTS-UNIQUE-CONSTRAINTS
-    isbn          text NOT NULL UNIQUE,
-                  -- https://www.postgresql.org/docs/current/ddl-constraints.html#DDL-CONSTRAINTS-CHECK-CONSTRAINTS
-                  -- https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-POSIX-REGEXP
-    rating        integer NOT NULL CHECK (rating >= 0 AND rating <= 5),
-    art           buchart,
-                  -- https://www.postgresql.org/docs/current/datatype-numeric.html#DATATYPE-NUMERIC-DECIMAL
-                  -- 10 Stellen, davon 2 Nachkommastellen
-    preis         decimal(8,2) NOT NULL,
-    rabatt        decimal(4,3) NOT NULL,
-                  -- https://www.postgresql.org/docs/current/datatype-boolean.html
-    lieferbar     boolean NOT NULL DEFAULT FALSE,
-                  -- https://www.postgresql.org/docs/current/datatype-datetime.html
-    datum         date,
+    name          text NOT NULL UNIQUE,
+    gruendungsjahr integer CHECK (gruendungsjahr >= 1800 AND gruendungsjahr <= EXTRACT(YEAR FROM NOW())),
+    branche       text,
+    mitarbeiteranzahl integer CHECK (mitarbeiteranzahl >= 0),
+    umsatz        decimal(12,2),
     homepage      text,
-                  -- https://www.postgresql.org/docs/current/datatype-json.html
-    schlagwoerter jsonb,
-                  -- https://www.postgresql.org/docs/current/datatype-datetime.html
     erzeugt       timestamp NOT NULL DEFAULT NOW(),
     aktualisiert  timestamp NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS titel (
-    id          integer GENERATED ALWAYS AS IDENTITY(START WITH 1000) PRIMARY KEY,
-    titel       text NOT NULL,
-    untertitel  text,
-                -- https://www.postgresql.org/docs/current/ddl-constraints.html#DDL-CONSTRAINTS-FK
-    buch_id     integer NOT NULL UNIQUE REFERENCES buch ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS geschaeftsfuehrer (
+    id            integer GENERATED ALWAYS AS IDENTITY(START WITH 1000) PRIMARY KEY,
+    name          text NOT NULL,
+    email         text CHECK (position('@' in email) > 1),
+    telefon       text,
+    firma_id      integer NOT NULL UNIQUE REFERENCES firma ON DELETE CASCADE,
+    erzeugt       timestamp NOT NULL DEFAULT NOW(),
+    aktualisiert  timestamp NOT NULL DEFAULT NOW()
 );
 
-
-CREATE TABLE IF NOT EXISTS abbildung (
-    id              integer GENERATED ALWAYS AS IDENTITY(START WITH 1000) PRIMARY KEY,
-    beschriftung    text NOT NULL,
-    content_type    text NOT NULL,
-    buch_id         integer NOT NULL REFERENCES buch ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS standort (
+    id            integer GENERATED ALWAYS AS IDENTITY(START WITH 1000) PRIMARY KEY,
+    adresse       text NOT NULL,
+    plz           text NOT NULL,
+    ort           text NOT NULL,
+    land          text NOT NULL,
+    firma_id      integer NOT NULL REFERENCES firma ON DELETE CASCADE,
+    erzeugt       timestamp NOT NULL DEFAULT NOW(),
+    aktualisiert  timestamp NOT NULL DEFAULT NOW()
 );
-CREATE INDEX IF NOT EXISTS abbildung_buch_id_idx ON abbildung(buch_id);
+CREATE INDEX IF NOT EXISTS standort_firma_id_idx ON standort(firma_id);
 
-CREATE TABLE IF NOT EXISTS buch_file (
-    id              integer GENERATED ALWAYS AS IDENTITY(START WITH 1000) PRIMARY KEY,
-    data            bytea NOT NULL,
-    filename        text NOT NULL,
-    mimetype        text,
-    buch_id         integer NOT NULL UNIQUE REFERENCES buch ON DELETE CASCADE
+
+CREATE TABLE IF NOT EXISTS firma_file (
+    id            integer GENERATED ALWAYS AS IDENTITY(START WITH 1000) PRIMARY KEY,
+    data          bytea NOT NULL,
+    filename      text NOT NULL,
+    mimetype      text,
+    firma_id      integer NOT NULL UNIQUE REFERENCES firma ON DELETE CASCADE
 );
-CREATE INDEX IF NOT EXISTS buch_file_buch_id_idx ON buch_file(buch_id);
+CREATE INDEX IF NOT EXISTS firma_file_firma_id_idx ON firma_file(firma_id);
