@@ -23,9 +23,8 @@ CREATE TABLE IF NOT EXISTS geschaeftsfuehrer (
     name          text NOT NULL,
     email         text CHECK (position('@' in email) > 1),
     telefon       text,
-    firma_id      integer NOT NULL UNIQUE REFERENCES firma ON DELETE CASCADE,
-    erzeugt       timestamp NOT NULL DEFAULT NOW(),
-    aktualisiert  timestamp NOT NULL DEFAULT NOW()
+    firma_id      integer NOT NULL UNIQUE REFERENCES firma ON DELETE CASCADE
+    
 );
 
 CREATE TABLE IF NOT EXISTS standort (
@@ -34,9 +33,7 @@ CREATE TABLE IF NOT EXISTS standort (
     plz           text NOT NULL,
     ort           text NOT NULL,
     land          text NOT NULL,
-    firma_id      integer NOT NULL REFERENCES firma ON DELETE CASCADE,
-    erzeugt       timestamp NOT NULL DEFAULT NOW(),
-    aktualisiert  timestamp NOT NULL DEFAULT NOW()
+    firma_id      integer NOT NULL REFERENCES firma ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS standort_firma_id_idx ON standort(firma_id);
 
