@@ -1,7 +1,7 @@
-id,adresse,plz,ort,land,firma_id
-1000,Hauptstraße 10,10115,Berlin,Deutschland,1000
-1001,Werkstraße 25,20095,Hamburg,Deutschland,1000
-1002,Industriestraße 7,80331,München,Deutschland,1001
-1003,Fabrikstraße 12,50667,Köln,Deutschland,1001
-1004,Innovationweg 5,70173,Stuttgart,Deutschland,1002
-1005,Technopark 3,90402,Nürnberg,Deutschland,1002
+id;adresse;plz;ort;land;firma_id
+1000;Hauptstraße 10;10115;Berlin;Deutschland;1000
+1001;Werkstraße 25;20095;Hamburg;Deutschland;1000
+1002;Industriestraße 7;80331;München;Deutschland;1001
+1003;Fabrikstraße 12;50667;Köln;Deutschland;1001
+1004;Innovationweg 5;70173;Stuttgart;Deutschland;1002
+1005;Technopark 3;90402;Nürnberg;Deutschland;1002
