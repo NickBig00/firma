@@ -7,6 +7,7 @@ import {
   Req,
   Res,
   Headers,
+  Query,
   UseInterceptors,
 } from '@nestjs/common';
 import {
@@ -24,6 +25,8 @@ import { paths } from '../../config/paths.js';
 import { getLogger } from '../../logger/logger.js';
 import { ResponseTimeInterceptor } from '../../logger/response-time.js';
 import { FirmaService } from '../service/firma-service.js';
+import { createPageable } from '../service/pageable.js';
+import { createPage, Page } from './page.js';
 
 @Controller(paths.rest)
 @UseInterceptors(ResponseTimeInterceptor)
@@ -91,4 +94,65 @@ export class FirmaController {
     this.#logger.debug('getById: firma=%o', firma);
     return res.json(firma);
   }
+
+/**
+ * Firmen werden mit Query-Parametern asynchron gesucht.
+ * Falls es mindestens eine passende Firma gibt, wird der Statuscode `200` (`OK`) gesetzt.
+ * Falls keine Firma gefunden wurde, wird der Statuscode `404` (`Not Found`) gesetzt.
+ * Falls keine Query-Parameter vorhanden sind, werden alle Firmen ermittelt.
+ *
+ * @param query Query-Parameter von Express.
+ * @param req   Request-Objekt von Express.
+ * @param res   Leeres Response-Objekt von Express.
+ * @returns     Eine Seite mit Firmen oder ein Count-Objekt.
+ */
+@Get()
+@Public()
+@ApiOperation({ summary: 'Suche mit Suchparametern' })
+@ApiOkResponse({ description: 'Eine evtl. leere Liste mit Firmen' })
+async get(
+  @Query() query: FirmaQuery,
+  @Req() req: Request,
+  @Res() res: Response,
+): Promise<Response<Page<Readonly<FirmaDTO>> | Record<'count', number>>> {
+  this.#logger.debug('get: query=%o', query);
+
+  if (req.accepts(['json', 'html']) === false) {
+    this.#logger.debug('get: accepted=%o', req.accepted);
+    return res.sendStatus(HttpStatus.NOT_ACCEPTABLE);
+  }
+
+  const { only } = query;
+  if (only !== undefined) {
+    const count = await this.#service.count();
+    this.#logger.debug('get: count=%d', count);
+    return res.json({ count });
+  }
+
+  const { page, size } = query;
+  delete query.page;
+  delete query.size;
+
+  this.#logger.debug(
+    'get: page=%s, size=%s',
+    page ?? 'undefined',
+    size ?? 'undefined',
+  );
+
+  const keys = Object.keys(query) as (keyof FirmaQuery)[];
+  keys.forEach((key) => {
+    if (query[key] === undefined) {
+      delete query[key];
+    }
+  });
+
+  this.#logger.debug('get: query=%o', query);
+
+  const pageable = createPageable({ number: page, size });
+  const firmenSlice = await this.#service.find(query, pageable);
+  const firmaPage = createPage(firmenSlice, pageable);
+
+  this.#logger.debug('get: firmaPage=%o', firmaPage);
+  return res.json(firmaPage).send();
+}
 }
