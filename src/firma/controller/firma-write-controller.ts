@@ -35,13 +35,13 @@ import { AuthGuard, Public, Roles } from 'nest-keycloak-connect';
 import { paths } from '../../config/paths.js';
 import { getLogger } from '../../logger/logger.js';
 import { ResponseTimeInterceptor } from '../../logger/response-time.js';
-/*import {
+import {
     FirmaCreate,
     type FirmaFileCreated,
     FirmaUpdate,
     FirmaWriteService,
 } from '../service/firma-write-service.js';
-import { BuchDTO, BuchDtoOhneRef } from './buch-dto.js';*/
+import { FirmaDTO, FirmaDtoOhneRef } from './firma-dto.js';
 import { createBaseUri } from './create-base-uri.js';
 import { InvalidMimeTypeException } from './exceptions.js';
 
@@ -60,3 +60,44 @@ const MULTER_OPTIONS: MulterOptions = {
         cb(null, true);
     },
 };
+
+
+/**
+ * Die Controller-Klasse für die Verwaltung von Firmen.
+ */
+@Controller(paths.rest)
+@UseGuards(AuthGuard)
+@UseInterceptors(ResponseTimeInterceptor)
+@ApiTags('Firma REST-API')
+@ApiBearerAuth()
+export class FirmaWriteController {
+    readonly #service: FirmaWriteService;
+    readonly #logger = getLogger(FirmaWriteController.name);
+
+    constructor(service: FirmaWriteService) {
+        this.#service = service;
+    }
+
+    /**
+     * @param firmaDTO JSON-Daten für die anzulegende Firma.
+     * @param req Request-Objekt von Express für den Location-Header.
+     * @param res Leeres Response-Objekt von Express.
+     * @returns Leeres Promise-Objekt.
+     */
+     @Post()
+    @Roles('admin', 'user')
+    @ApiOperation({ summary: 'Eine neue Firma anlegen' })
+    @ApiCreatedResponse({ description: 'Erfolgreich neu angelegt' })
+    @ApiBadRequestResponse({ description: 'Fehlerhafte Firmendaten' })
+    @ApiForbiddenResponse({ description: MSG_FORBIDDEN })
+    async post(@Body() firmaDTO: FirmaDTO, @Req() req: Request, @Res() res: Response) {
+        this.#logger.debug('post: firmaDTO=%o', firmaDTO);
+
+        const firma = this.#dtoToFirmaCreate(firmaDTO);
+        const id = await this.#service.create(firma);
+
+        const location = `${createBaseUri(req)}/${id}`;
+        this.#logger.debug('post: location=%s', location);
+        return res.location(location).send();
+    }
+}
