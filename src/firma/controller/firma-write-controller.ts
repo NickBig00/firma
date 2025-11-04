@@ -147,4 +147,56 @@ export class FirmaWriteController {
         const location = `${createBaseUri(req)}/file/${id}`;
         return res.location(location).send();
     }
+
+    /**
+     * Eine bestehende Firma wird asynchron aktualisiert.
+     *
+     * Die ID der zu aktualisierenden Firma ist als Pfadparameter enthalten.
+     * Im Body wird das zu aktualisierende Firmenobjekt als JSON übergeben.
+     * Damit die Aktualisierung durchgeführt werden kann, muss im Header `If-Match`
+     * die korrekte Version angegeben sein (optimistische Synchronisation).
+     *
+     * Bei Erfolg: `204 (No Content)` und Header `ETag` mit der neuen Version.
+     * Bei falscher oder fehlender Versionsnummer: `412 (Precondition Failed)` bzw. `428 (Precondition Required)`.
+     *
+     * @param firmaDTO JSON-Daten der zu aktualisierenden Firma.
+     * @param id ID der Firma, die aktualisiert wird.
+     * @param version Versionsnummer aus dem Header `If-Match`.
+     * @param res Response-Objekt von Express.
+     * @returns Leeres Promise-Objekt.
+     */
+    @Put(':id')
+    @Roles('admin', 'user')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    @ApiOperation({ summary: 'Vorhandene Firma aktualisieren' })
+    @ApiHeader({
+        name: 'If-Match',
+        description: 'Header für optimistische Synchronisation',
+        required: false,
+    })
+    @ApiParam({
+        name: 'id',
+        description: 'ID der Firma, die aktualisiert werden soll',
+        example: 2,
+    })
+    @ApiNoContentResponse({ description: 'Erfolgreich aktualisiert' })
+    @ApiPreconditionFailedResponse({ description: 'Falsche Version im Header "If-Match"' })
+    @ApiForbiddenResponse({ description: MSG_FORBIDDEN })
+    async put(
+        @Body() firmaDTO: FirmaDtoOhneRef,
+        @Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_FOUND })) id: number,
+        @Headers('If-Match') version: string | undefined,
+        @Res() res: Response,
+    ): Promise<Response> {
+        this.#logger.debug('put: id=%d, firmaDTO=%o, version=%s', id, firmaDTO, version ?? 'undefined');
+
+        if (version === undefined) {
+            const msg = 'Header "If-Match" fehlt';
+            return res.status(HttpStatus.PRECONDITION_REQUIRED).set('Content-Type', 'application/json').send(msg);
+        }
+
+        const firma = this.dtoToFirmaUpdate(firmaDTO);
+        const neueVersion = await this.#service.update({ id, firma, version });
+        return res.header('ETag', `"${neueVersion}"`).send();
+    }
 }
