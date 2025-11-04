@@ -41,6 +41,22 @@ import { ResponseTimeInterceptor } from '../../logger/response-time.js';
     FirmaUpdate,
     FirmaWriteService,
 } from '../service/firma-write-service.js';
-import { BuchDTO, BuchDtoOhneRef } from './buch-dto.js';
+import { BuchDTO, BuchDtoOhneRef } from './buch-dto.js';*/
 import { createBaseUri } from './create-base-uri.js';
-import { InvalidMimeTypeException } from './exceptions.js'; */
+import { InvalidMimeTypeException } from './exceptions.js';
+
+
+const MSG_FORBIDDEN = 'Kein Token mit ausreichender Berechtigung vorhanden';
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const MIME_TYPES = new Set(['image/png', 'image/jpeg', 'application/pdf']);
+
+const MULTER_OPTIONS: MulterOptions = {
+    limits: { fileSize: MAX_FILE_SIZE },
+    fileFilter: (_: any, file: any, cb: any) => {
+        if (!MIME_TYPES.has(file.mimetype)) {
+            return cb(new InvalidMimeTypeException(file.mimetype), false);
+        }
+        cb(null, true);
+    },
+};
