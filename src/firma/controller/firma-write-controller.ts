@@ -199,4 +199,27 @@ export class FirmaWriteController {
         const neueVersion = await this.#service.update({ id, firma, version });
         return res.header('ETag', `"${neueVersion}"`).send();
     }
-}
+    /**
+     * Eine Firma wird anhand ihrer ID gelöscht.
+     * Der zurückgelieferte Statuscode ist `204 (No Content)`.
+     * Wenn die Firma nicht existiert, erfolgt keine Fehlermeldung.
+     *
+     * @param id ID der zu löschenden Firma.
+     * @returns Leeres Promise-Objekt.
+     */
+    @Delete(':id')
+    @Roles('admin')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    @ApiOperation({ summary: 'Firma löschen' })
+    @ApiParam({
+        name: 'id',
+        description: 'ID der Firma, die gelöscht werden soll',
+        example: 5,
+    })
+    @ApiNoContentResponse({
+        description: 'Die Firma wurde gelöscht oder war nicht vorhanden',
+    })
+    async delete(@Param('id') id: number) {
+        this.#logger.debug('delete: id=%d', id);
+        await this.#service.delete(id);
+    }}
