@@ -249,7 +249,7 @@ export class FirmaWriteController {
             },
             standorte: {
                 create:
-                    dto.standorte?.map((s) => ({
+                    dto.standorte?.map((s: { adresse: string; plz: string; ort: string; land: string }) => ({
                         adresse: s.adresse,
                         plz: s.plz,
                         ort: s.ort,
