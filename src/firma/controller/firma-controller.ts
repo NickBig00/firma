@@ -155,4 +155,47 @@ async get(
   this.#logger.debug('get: firmaPage=%o', firmaPage);
   return res.json(firmaPage).send();
 }
+
+/**
+ * Zu einer Firma mit gegebener ID wird die zugehörige Binärdatei,
+ * z. B. ein Logo oder ein PDF, heruntergeladen.
+ *
+ * @param idStr Pfad-Parameter `id`.
+ * @param res   Response-Objekt von Express.
+ * @returns     Ein StreamableFile-Objekt mit der Binärdatei.
+ */
+@Get('/file/:id')
+@Public()
+@ApiOperation({ description: 'Suche nach Datei mit der Firmen-ID' })
+@ApiParam({
+  name: 'id',
+  description: 'z. B. 1',
+})
+@ApiNotFoundResponse({ description: 'Keine Datei zur Firmen-ID gefunden' })
+@ApiOkResponse({ description: 'Die Datei wurde gefunden' })
+async getFileById(
+  @Param('id') idStr: string,
+  @Res({ passthrough: true }) res: Response,
+): Promise<StreamableFile> {
+  this.#logger.debug('getFileById: firmaId=%s', idStr);
+
+  const id = Number(idStr);
+  if (!Number.isInteger(id)) {
+    this.#logger.debug('getFileById: keine Ganzzahl');
+    throw new NotFoundException(`Die Firmen-ID ${idStr} ist ungültig.`);
+  }
+
+  const firmaFile = await this.#service.findFileByFirmaId(id);
+  if (firmaFile?.data === undefined) {
+    throw new NotFoundException('Keine Datei gefunden.');
+  }
+
+  res
+    .contentType(firmaFile.mimetype ?? 'application/octet-stream')
+    .set({
+      'Content-Disposition': `inline; filename="${firmaFile.filename}"`,
+    });
+
+  return new StreamableFile(firmaFile.data);
+}
 }
