@@ -222,4 +222,59 @@ export class FirmaWriteController {
     async delete(@Param('id') id: number) {
         this.#logger.debug('delete: id=%d', id);
         await this.#service.delete(id);
-    }}
+    }
+
+    /**
+     * Hilfsmethode zum Umwandeln eines `FirmaDTO` in ein `FirmaCreate`-Objekt
+     * für das Service-Layer.
+     *
+     * @param dto Die empfangenen Firmendaten (DTO).
+     * @returns Datenstruktur für das Anlegen einer Firma in der Datenbank.
+     */
+    private dtoToFirmaCreate(dto: FirmaDTO): FirmaCreate {
+        const firma: FirmaCreate = {
+            version: 0,
+            name: dto.name,
+            gruendungsjahr: dto.gruendungsjahr,
+            branche: dto.branche,
+            mitarbeiteranzahl: dto.mitarbeiteranzahl,
+            umsatz: dto.umsatz,
+            homepage: dto.homepage ?? null,
+            geschaeftsfuehrer: {
+                create: {
+                    name: dto.geschaeftsfuehrer.name,
+                    email: dto.geschaeftsfuehrer.email,
+                    telefon: dto.geschaeftsfuehrer.telefon,
+                },
+            },
+            standorte: {
+                create:
+                    dto.standorte?.map((s) => ({
+                        adresse: s.adresse,
+                        plz: s.plz,
+                        ort: s.ort,
+                        land: s.land,
+                    })) ?? [],
+            },
+        };
+        return firma;
+    }
+
+    /**
+     * Hilfsmethode zum Umwandeln eines `FirmaDtoOhneRef` in ein `FirmaUpdate`-Objekt.
+     *
+     * @param dto Die zu aktualisierenden Firmendaten (ohne Referenzen).
+     * @returns Datenstruktur für das Aktualisieren einer Firma.
+     */
+    private dtoToFirmaUpdate(dto: FirmaDtoOhneRef): FirmaUpdate {
+        return {
+            version: 0,
+            name: dto.name,
+            gruendungsjahr: dto.gruendungsjahr,
+            branche: dto.branche,
+            mitarbeiteranzahl: dto.mitarbeiteranzahl,
+            umsatz: dto.umsatz,
+            homepage: dto.homepage ?? null,
+        };
+    }
+}
