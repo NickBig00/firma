@@ -85,7 +85,7 @@ export class FirmaWriteController {
      * @param res Leeres Response-Objekt von Express.
      * @returns Leeres Promise-Objekt.
      */
-     @Post()
+    f @Post()
     @Roles('admin', 'user')
     @ApiOperation({ summary: 'Eine neue Firma anlegen' })
     @ApiCreatedResponse({ description: 'Erfolgreich neu angelegt' })
