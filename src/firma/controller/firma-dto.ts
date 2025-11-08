@@ -1,55 +1,79 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional, IsString, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 import { GeschaeftsfuehrerDTO } from './geschaeftsfuehrer-dto.js';
 import { StandortDTO } from './standort-dto.js';
-
+import { MaxLength } from 'class-validator';
 export class FirmaDTO {
-    @ApiProperty({
-        example: 'Tech GmbH',
-        description: 'Name der Firma',
-    })
-    readonly name!: string;
+  @ApiProperty({ example: 'Beispiel GmbH', description: 'Name der Firma' })
+  @IsString()
+  @MaxLength(50)
+  readonly name!: string;
 
-    @ApiProperty({
-        example: 2015,
-        description: 'Gründungsjahr der Firma',
-    })
-    readonly gruendungsjahr!: number;
+  @ApiProperty({ example: 1998, description: 'Gründungsjahr der Firma' })
+  readonly gruendungsjahr!: number;
 
-    @ApiProperty({
-        example: 'IT-Dienstleistungen',
-        description: 'Branche der Firma',
-    })
-    readonly branche!: string;
+  @ApiProperty({ example: 'IT-Dienstleistungen', description: 'Branche der Firma' })
+  @IsString()
+  @MaxLength(50)
+  readonly branche!: string;
 
-    @ApiProperty({
-        example: 50,
-        description: 'Anzahl der Mitarbeiter',
-    })
-    readonly mitarbeiteranzahl!: number;
+  @ApiProperty({ example: 120, description: 'Anzahl der Mitarbeiter' })
+  readonly mitarbeiteranzahl!: number;
 
-    @ApiProperty({
-        example: 1250000.75,
-        description: 'Jahresumsatz der Firma in Euro',
-    })
-    readonly umsatz!: number;
+  @ApiProperty({ example: 2500000, description: 'Jahresumsatz in Euro' })
+  @IsOptional()
+  readonly umsatz?: number;
 
-    @ApiProperty({
-        example: 'https://techgmbh.de',
-        required: false,
-        description: 'Optionale Homepage der Firma',
-    })
-    readonly homepage?: string;
+  @ApiProperty({
+    example: 'https://www.beispiel-gmbh.de',
+    description: 'Homepage der Firma',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
+  readonly homepage?: string | null;
 
-    @ApiProperty({
-        description: 'Geschäftsführer der Firma (1:1-Beziehung)',
-        type: () => GeschaeftsfuehrerDTO,
-    })
-    readonly geschaeftsfuehrer!: GeschaeftsfuehrerDTO;
+  @ApiProperty({ type: GeschaeftsfuehrerDTO })
+  @ValidateNested()
+  @Type(() => GeschaeftsfuehrerDTO)
+  readonly geschaeftsfuehrer!: GeschaeftsfuehrerDTO;
 
-    @ApiProperty({
-        description: 'Liste der Standorte der Firma (1:n-Beziehung)',
-        type: () => [StandortDTO],
-        required: false,
-    })
-    readonly standorte?: StandortDTO[];
+  @ApiProperty({ type: [StandortDTO], required: false })
+  @ValidateNested({ each: true })
+  @Type(() => StandortDTO)
+  @IsOptional()
+  readonly standorte?: StandortDTO[];
+}
+export class FirmaDtoOhneRef {
+  @ApiProperty({ example: 'Beispiel GmbH', description: 'Name der Firma' })
+  @IsString()
+  @MaxLength(50)
+  readonly name!: string;
+
+  @ApiProperty({ example: 1998, description: 'Gründungsjahr der Firma' })
+  readonly gruendungsjahr!: number;
+
+  @ApiProperty({ example: 'IT-Dienstleistungen', description: 'Branche der Firma' })
+  @IsString()
+  @MaxLength(50)
+  readonly branche!: string;
+
+  @ApiProperty({ example: 120, description: 'Anzahl der Mitarbeiter' })
+  readonly mitarbeiteranzahl!: number;
+
+  @ApiProperty({ example: 2500000, description: 'Jahresumsatz in Euro' })
+  @IsOptional()
+  readonly umsatz?: number;
+
+  @ApiProperty({
+    example: 'https://www.beispiel-gmbh.de',
+    description: 'Homepage der Firma',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
+  readonly homepage?: string | null;
 }
