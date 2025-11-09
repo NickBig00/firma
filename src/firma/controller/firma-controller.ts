@@ -16,6 +16,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiProperty,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -26,7 +27,42 @@ import { getLogger } from '../../logger/logger.js';
 import { ResponseTimeInterceptor } from '../../logger/response-time.js';
 import { FirmaService } from '../service/firma-service.js';
 import { createPageable } from '../service/pageable.js';
+import { type Suchparameter } from '../service/suchparameter.js';
 import { createPage, Page } from './page.js';
+
+
+export class FirmaQuery implements Suchparameter {
+  @ApiProperty({ required: false })
+  declare readonly name?: string;
+
+  @ApiProperty({ required: false })
+  declare readonly branche?: string;
+
+  @ApiProperty({ required: false })
+  declare readonly ort?: string;
+
+  @ApiProperty({ required: false })
+  declare readonly gruendungsjahr?: number;
+
+  @ApiProperty({ required: false })
+  declare readonly mitarbeiteranzahl?: number;
+
+  @ApiProperty({ required: false })
+  declare readonly umsatz?: number;
+
+  @ApiProperty({ required: false })
+  declare readonly homepage?: string;
+
+  @ApiProperty({ required: false })
+  declare size?: string;
+
+  @ApiProperty({ required: false })
+  declare page?: string;
+
+  @ApiProperty({ required: false })
+  declare only?: 'count';
+}
+
 
 @Controller(paths.rest)
 @UseInterceptors(ResponseTimeInterceptor)
