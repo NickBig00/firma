@@ -9,6 +9,8 @@ import {
   Headers,
   Query,
   UseInterceptors,
+  NotFoundException,
+  StreamableFile,
 } from '@nestjs/common';
 import {
   ApiHeader,
@@ -20,12 +22,17 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Public } from 'nest-keycloak-connect';
 import { type Request, type Response } from 'express';
+import { Public } from 'nest-keycloak-connect';
 import { paths } from '../../config/paths.js';
+
 import { getLogger } from '../../logger/logger.js';
 import { ResponseTimeInterceptor } from '../../logger/response-time.js';
-import { FirmaService } from '../service/firma-service.js';
+import {
+  type FirmaMitName,
+  type FirmaMitNameUndStandorte,
+  FirmaService,
+} from '../service/firma-service.js';
 import { createPageable } from '../service/pageable.js';
 import { type Suchparameter } from '../service/suchparameter.js';
 import { createPage, Page } from './page.js';
@@ -86,50 +93,46 @@ export class FirmaController {
    * @returns Promise mit der gefundenen Firma oder HTTP-Statuscode
    */
   @Get(':id')
-  @Public()
-  @ApiOperation({ summary: 'Suche einer Firma mit ID' })
-  @ApiParam({ name: 'id', description: 'z.B. 1' })
-  @ApiHeader({
-    name: 'If-None-Match',
-    description: 'Header für bedingte GET-Requests, z.B. "0"',
-    required: false,
-  })
-  @ApiOkResponse({ description: 'Die Firma wurde gefunden' })
-  @ApiNotFoundResponse({ description: 'Keine Firma zur ID gefunden' })
-  @ApiResponse({
-    status: HttpStatus.NOT_MODIFIED,
-    description: 'Die Firma wurde bereits heruntergeladen',
-  })
-  async getById(
-    @Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_FOUND }))
-    id: number,
-    @Req() req: Request,
-    @Headers('If-None-Match') version: string | undefined,
-    @Res() res: Response,
-  ): Promise<Response> {
-    this.#logger.debug('getById: id=%d, version=%s', id, version ?? '-1');
+@Public()
+@ApiOperation({ summary: 'Suche mit der Firmen-ID' })
+@ApiParam({ name: 'id', description: 'z.B. 1' })
+@ApiHeader({
+  name: 'If-None-Match',
+  description: 'Header für bedingte GET-Requests, z.B. "0"',
+  required: false,
+})
+@ApiOkResponse({ description: 'Die Firma wurde gefunden' })
+@ApiNotFoundResponse({ description: 'Keine Firma zur ID gefunden' })
+@ApiResponse({
+  status: HttpStatus.NOT_MODIFIED,
+  description: 'Die Firma wurde bereits heruntergeladen',
+})
+async getById(
+  @Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_FOUND }))
+  id: number,
+  @Req() req: Request,
+  @Headers('If-None-Match') version: string | undefined,
+  @Res() res: Response,
+): Promise<Response<FirmaMitNameUndStandorte>> {
+  this.#logger.debug('getById: id=%d, version=%s', id, version ?? '-1');
 
-    if (req.accepts(['json', 'html']) === false) {
-      this.#logger.debug('getById: accepted=%o', req.accepted);
-      return res.sendStatus(HttpStatus.NOT_ACCEPTABLE);
-    }
-
-    const firma = await this.#service.findById({ id });
-    if (firma === undefined) {
-      this.#logger.debug('getById: keine Firma gefunden');
-      return res.sendStatus(HttpStatus.NOT_FOUND);
-    }
-
-    const versionDb = firma.version;
-    if (version === `"${versionDb}"`) {
-      this.#logger.debug('getById: NOT_MODIFIED');
-      return res.sendStatus(HttpStatus.NOT_MODIFIED);
-    }
-
-    res.header('ETag', `"${versionDb}"`);
-    this.#logger.debug('getById: firma=%o', firma);
-    return res.json(firma);
+  if (req.accepts(['json', 'html']) === false) {
+    this.#logger.debug('getById: accepted=%o', req.accepted);
+    return res.sendStatus(HttpStatus.NOT_ACCEPTABLE);
   }
+
+  const firma = await this.#service.findById({ id });
+
+  const versionDb = firma.version;
+  if (version === `"${versionDb}"`) {
+    this.#logger.debug('getById: NOT_MODIFIED');
+    return res.sendStatus(HttpStatus.NOT_MODIFIED);
+  }
+
+  res.header('ETag', `"${versionDb}"`);
+  this.#logger.debug('getById: firma=%o', firma);
+  return res.json(firma);
+}
 
 /**
  * Firmen werden mit Query-Parametern asynchron gesucht.
@@ -150,7 +153,7 @@ async get(
   @Query() query: FirmaQuery,
   @Req() req: Request,
   @Res() res: Response,
-): Promise<Response<Page<Readonly<FirmaDTO>> | Record<'count', number>>> {
+): Promise<Response<Page<Readonly<FirmaMitName>> | Record<'count', number>>> {
   this.#logger.debug('get: query=%o', query);
 
   if (req.accepts(['json', 'html']) === false) {
