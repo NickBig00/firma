@@ -29,8 +29,8 @@ import { paths } from '../../config/paths.js';
 import { getLogger } from '../../logger/logger.js';
 import { ResponseTimeInterceptor } from '../../logger/response-time.js';
 import {
-  type FirmaMitName,
-  type FirmaMitNameUndStandorte,
+  type FirmaMitGeschaeftsfuehrer,
+  type FirmaMitGeschaeftsfuehrerundStandorten,
   FirmaService,
 } from '../service/firma-service.js';
 import { createPageable } from '../service/pageable.js';
@@ -113,7 +113,7 @@ async getById(
   @Req() req: Request,
   @Headers('If-None-Match') version: string | undefined,
   @Res() res: Response,
-): Promise<Response<FirmaMitNameUndStandorte>> {
+): Promise<Response<FirmaMitGeschaeftsfuehrerundStandorten>> {
   this.#logger.debug('getById: id=%d, version=%s', id, version ?? '-1');
 
   if (req.accepts(['json', 'html']) === false) {
@@ -153,7 +153,7 @@ async get(
   @Query() query: FirmaQuery,
   @Req() req: Request,
   @Res() res: Response,
-): Promise<Response<Page<Readonly<FirmaMitName>> | Record<'count', number>>> {
+): Promise<Response<Page<Readonly<FirmaMitGeschaeftsfuehrer>> | Record<'count', number>>> {
   this.#logger.debug('get: query=%o', query);
 
   if (req.accepts(['json', 'html']) === false) {
