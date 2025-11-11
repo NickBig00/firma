@@ -231,7 +231,7 @@ export class FirmaWriteController {
      * @param dto Die empfangenen Firmendaten (DTO).
      * @returns Datenstruktur für das Anlegen einer Firma in der Datenbank.
      */
-    private dtoToFirmaCreate(dto: FirmaDTO): FirmaCreate {
+    #dtoToFirmaCreate(dto: FirmaDTO): FirmaCreate {
         const firma: FirmaCreate = {
             version: 0,
             name: dto.name,
