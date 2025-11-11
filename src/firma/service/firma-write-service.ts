@@ -1,84 +1,61 @@
-// Copyright (C) 2016 - present Juergen Zimmermann, Hochschule Karlsruhe
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program. If not, see <https://www.gnu.org/licenses/>.
-
-/**
- * Das Modul besteht aus der Klasse {@linkcode BuchWriteService} für die
- * Schreiboperationen im Anwendungskern.
- * @packageDocumentation
- */
-
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { fileTypeFromBuffer } from 'file-type';
 import {
-    BuchFile,
+    FirmaFile,
     type Prisma,
     PrismaClient,
 } from '../../generated/prisma/client.js';
 import { getLogger } from '../../logger/logger.js';
 import { MailService } from '../../mail/mail-service.js';
-import { BuchService } from './firma-service.ts';
+import { FirmaService } from './firma-service.ts';
 import {
-    IsbnExistsException,
     VersionInvalidException,
     VersionOutdatedException,
 } from './exceptions.js';
 import { PrismaService } from './prisma-service.js';
 
-export type BuchCreate = Prisma.BuchCreateInput;
-type BuchCreated = Prisma.BuchGetPayload<{
+export type FirmaCreate = Prisma.FirmaCreateInput;
+type FirmaCreated = Prisma.FirmaGetPayload<{
     include: {
         titel: true;
         abbildungen: true;
     };
 }>;
 
-export type BuchUpdate = Prisma.BuchUpdateInput;
-/** Typdefinitionen zum Aktualisieren eines Buches mit `update`. */
+export type FirmaUpdate = Prisma.FirmaUpdateInput;
+/** Typdefinitionen zum Aktualisieren einer Firma mit `update`. */
 export type UpdateParams = {
-    /** ID des zu aktualisierenden Buches. */
+    /** ID dee zu aktualisierenden Firma. */
     readonly id: number | undefined;
-    /** Buch-Objekt mit den aktualisierten Werten. */
-    readonly buch: BuchUpdate;
+    /** Firma-Objekt mit den aktualisierten Werten. */
+    readonly firma: FirmaUpdate;
     /** Versionsnummer für die zu aktualisierenden Werte. */
     readonly version: string;
 };
-type BuchUpdated = Prisma.BuchGetPayload<{}>;
+type FirmaUpdated = Prisma.FirmaGetPayload<{}>;
 
-type BuchFileCreate = Prisma.BuchFileUncheckedCreateInput;
-export type BuchFileCreated = Prisma.BuchFileGetPayload<{}>;
+type FirmaFileCreate = Prisma.FirmaFileUncheckedCreateInput;
+export type FirmaFileCreated = Prisma.FirmaFileGetPayload<{}>;
 
 /**
- * Die Klasse `BuchWriteService` implementiert den Anwendungskern für das
- * Schreiben von Bücher und greift mit _Prisma_ auf die DB zu.
+ * Die Klasse `FirmaWriteService` implementiert den Anwendungskern für das
+ * Schreiben von Firmen und greift mit _Prisma_ auf die DB zu.
  */
 @Injectable()
-export class BuchWriteService {
+export class FirmaWriteService {
     private static readonly VERSION_PATTERN = /^"\d{1,3}"/u;
 
     readonly #prisma: PrismaClient;
 
-    readonly #readService: BuchService;
+    readonly #readService: FirmaService;
 
     readonly #mailService: MailService;
 
-    readonly #logger = getLogger(BuchWriteService.name);
+    readonly #logger = getLogger(FirmaWriteService.name);
 
-    // eslint-disable-next-line max-params
     constructor(
         prisma: PrismaService,
-        readService: BuchService,
+        readService: FirmaService,
         mailService: MailService,
     ) {
         this.#prisma = prisma.client;
@@ -87,180 +64,158 @@ export class BuchWriteService {
     }
 
     /**
-     * Ein neues Buch soll angelegt werden.
-     * @param buch Das neu abzulegende Buch
-     * @returns Die ID des neu angelegten Buches
-     * @throws IsbnExists falls die ISBN-Nummer bereits existiert
+     * Eine neue Firma soll angelegt werden.
+     * @param firma Die neu abzulegende Firma
+     * @returns Die ID der neu angelegten Firma
      */
-    async create(buch: BuchCreate) {
-        this.#logger.debug('create: buch=%o', buch);
-        await this.#validateCreate(buch);
+    async create(firma: FirmaCreate) {
+        this.#logger.debug('create: firma=%o', firma);
 
         // Neuer Datensatz mit generierter ID
-        let buchDb: BuchCreated | undefined;
+        let firmaDb: FirmaCreated | undefined;
         await this.#prisma.$transaction(async (tx) => {
-            buchDb = await tx.buch.create({
-                data: buch,
+            firmaDb = await tx.firma.create({
+                data: firma,
                 include: { titel: true, abbildungen: true },
             });
         });
         await this.#sendmail({
-            id: buchDb?.id ?? 'N/A',
-            titel: buchDb?.titel?.titel ?? 'N/A',
+            id: firmaDb?.id ?? 'N/A',
+            titel: firmaDb?.name ?? 'N/A',
         });
 
-        this.#logger.debug('create: buchDb.id=%s', buchDb?.id ?? 'N/A');
-        return buchDb?.id ?? Number.NaN;
+        this.#logger.debug('create: firmaDb.id=%s', firmaDb?.id ?? 'N/A');
+        return firmaDb?.id ?? Number.NaN;
     }
 
     /**
-     * Zu einem vorhandenen Buch eine Binärdatei mit z.B. einem Bild abspeichern.
-     * @param buchId ID des vorhandenen Buches
+     * Zu einer vorhandenen Firma eine Binärdatei mit z.B. einem Bild abspeichern.
+     * @param firmaId ID der vorhandenen Firma
      * @param data Bytes der Datei als Buffer Node
      * @param filename Dateiname
      * @param size Dateigröße in Bytes
-     * @returns Entity-Objekt für `BuchFile`
+     * @returns Entity-Objekt für `FirmaFile`
      */
     // eslint-disable-next-line max-params
     async addFile(
-        buchId: number,
+        firmaId: number,
         data: Uint8Array<ArrayBufferLike>,
         filename: string,
         size: number,
-    ): Promise<Readonly<BuchFile> | undefined> {
+    ): Promise<Readonly<FirmaFile> | undefined> {
         this.#logger.debug(
-            'addFile: buchId=%d, filename=%s, size=%d',
-            buchId,
+            'addFile: firmaId=%d, filename=%s, size=%d',
+            firmaId,
             filename,
             size,
         );
 
-        // TODO Dateigroesse pruefen
 
-        let buchFileCreated: BuchFileCreated | undefined;
+        let firmaFileCreated: FirmaFileCreated | undefined;
         await this.#prisma.$transaction(async (tx) => {
-            // Buch ermitteln, falls vorhanden
-            const buch = tx.buch.findUnique({
-                where: { id: buchId },
+            const firma = tx.firma.findUnique({
+                where: { id: firmaId },
             });
-            if (buch === null) {
-                this.#logger.debug('Es gibt kein Buch mit der ID %d', buchId);
+            if (firma === null) {
+                this.#logger.debug('Es gibt keine Firma mit der ID %d', firmaId);
                 throw new NotFoundException(
-                    `Es gibt kein Buch mit der ID ${buchId}.`,
+                    `Es gibt keine Firma mit der ID ${firmaId}.`,
                 );
             }
 
             // evtl. vorhandene Datei löschen
-            await tx.buchFile.deleteMany({ where: { buchId } });
+            await tx.firmaFile.deleteMany({ where: { firmaId } });
 
             const fileType = await fileTypeFromBuffer(data);
             const mimetype = fileType?.mime ?? null;
             this.#logger.debug('addFile: mimetype=%s', mimetype ?? 'undefined');
 
-            const buchFile: BuchFileCreate = {
+            const firmaFile: FirmaFileCreate = {
                 filename,
                 data,
                 mimetype,
-                buchId,
+                firmaId,
             };
-            buchFileCreated = await tx.buchFile.create({ data: buchFile });
+            firmaFileCreated = await tx.firmaFile.create({ data: firmaFile });
         });
 
         this.#logger.debug(
             'addFile: id=%d, byteLength=%d, filename=%s, mimetype=%s',
-            buchFileCreated?.id ?? Number.NaN,
-            buchFileCreated?.data.byteLength ?? Number.NaN,
-            buchFileCreated?.filename ?? 'undefined',
-            buchFileCreated?.mimetype ?? 'null',
+            firmaFileCreated?.id ?? Number.NaN,
+            firmaFileCreated?.data.byteLength ?? Number.NaN,
+            firmaFileCreated?.filename ?? 'undefined',
+            firmaFileCreated?.mimetype ?? 'null',
         );
-        return buchFileCreated;
+        return firmaFileCreated;
     }
 
     /**
-     * Ein vorhandenes Buch soll aktualisiert werden. "Destructured" Argument
-     * mit id (ID des zu aktualisierenden Buchs), buch (zu aktualisierendes Buch)
-     * und version (Versionsnummer für optimistische Synchronisation).
+     * Ein vorhandene Firma soll aktualisiert werden.
      * @returns Die neue Versionsnummer gemäß optimistischer Synchronisation
-     * @throws NotFoundException falls kein Buch zur ID vorhanden ist
+     * @throws NotFoundException falls keine Firma zur ID vorhanden ist
      * @throws VersionInvalidException falls die Versionsnummer ungültig ist
      * @throws VersionOutdatedException falls die Versionsnummer veraltet ist
      */
     // https://2ality.com/2015/01/es6-destructuring.html#simulating-named-parameters-in-javascript
-    async update({ id, buch, version }: UpdateParams) {
+    async update({ id, firma, version }: UpdateParams) {
         this.#logger.debug(
-            'update: id=%d, buch=%o, version=%s',
+            'update: id=%d, firma=%o, version=%s',
             id ?? Number.NaN,
-            buch,
+            firma,
             version,
         );
         if (id === undefined) {
             this.#logger.debug('update: Keine gueltige ID');
-            throw new NotFoundException(`Es gibt kein Buch mit der ID ${id}.`);
+            throw new NotFoundException(`Es gibt kein Firma mit der ID ${id}.`);
         }
 
         await this.#validateUpdate(id, version);
 
-        buch.version = { increment: 1 };
-        let buchUpdated: BuchUpdated | undefined;
+        firma.version = { increment: 1 };
+        let firmaUpdated: FirmaUpdated | undefined;
         await this.#prisma.$transaction(async (tx) => {
-            buchUpdated = await tx.buch.update({
-                data: buch,
+            firmaUpdated = await tx.firma.update({
+                data: firma,
                 where: { id },
             });
         });
         this.#logger.debug(
-            'update: buchUpdated=%s',
-            JSON.stringify(buchUpdated),
+            'update: firmaUpdated=%s',
+            JSON.stringify(firmaUpdated),
         );
 
-        return buchUpdated?.version ?? Number.NaN;
+        return firmaUpdated?.version ?? Number.NaN;
     }
 
     /**
-     * Ein Buch wird asynchron anhand seiner ID gelöscht.
+     * Ein Firma wird asynchron anhand seiner ID gelöscht.
      *
-     * @param id ID des zu löschenden Buches
-     * @returns true, falls das Buch vorhanden war und gelöscht wurde. Sonst false.
+     * @param id ID der zu löschenden Firma
+     * @returns true, falls die Frima vorhanden war und gelöscht wurde. Sonst false.
      */
     async delete(id: number) {
         this.#logger.debug('delete: id=%d', id);
 
-        const buch = await this.#prisma.buch.findUnique({
+        const firma = await this.#prisma.firma.findUnique({
             where: { id },
         });
-        if (buch === null) {
+        if (firma === null) {
             this.#logger.debug('delete: not found');
             return false;
         }
 
         await this.#prisma.$transaction(async (tx) => {
-            await tx.buch.delete({ where: { id } });
+            await tx.firma.delete({ where: { id } });
         });
 
         this.#logger.debug('delete');
         return true;
     }
 
-    async #validateCreate({
-        isbn,
-    }: Prisma.BuchCreateInput): Promise<undefined> {
-        this.#logger.debug('#validateCreate: isbn=%s', isbn ?? 'undefined');
-        if (isbn === undefined) {
-            this.#logger.debug('#validateCreate: ok');
-            return;
-        }
 
-        const anzahl = await this.#prisma.buch.count({ where: { isbn } });
-        if (anzahl > 0) {
-            this.#logger.debug('#validateCreate: isbn existiert: %s', isbn);
-            throw new IsbnExistsException(isbn);
-        }
-        this.#logger.debug('#validateCreate: ok');
-    }
-
-    async #sendmail({ id, titel }: { id: number | 'N/A'; titel: string }) {
-        const subject = `Neues Buch ${id}`;
-        const body = `Das Buch mit dem Titel <strong>${titel}</strong> ist angelegt`;
+    async #sendmail({ id, name }: { id: number | 'N/A'; name: string }) {
+        const subject = `Neue Firma ${id}`;
+        const body = `Die Firma mit dem Name <strong>${name}</strong> ist angelegt`;
         await this.#mailService.sendmail({ subject, body });
     }
 
@@ -270,14 +225,14 @@ export class BuchWriteService {
             id,
             versionStr,
         );
-        if (!BuchWriteService.VERSION_PATTERN.test(versionStr)) {
+        if (!FirmaWriteService.VERSION_PATTERN.test(versionStr)) {
             throw new VersionInvalidException(versionStr);
         }
 
         const version = Number.parseInt(versionStr.slice(1, -1), 10);
-        const buchDb = await this.#readService.findById({ id });
+        const firmaDb = await this.#readService.findById({ id });
 
-        if (version < buchDb.version) {
+        if (version < firmaDb.version) {
             this.#logger.debug('#validateUpdate: versionDb=%d', version);
             throw new VersionOutdatedException(version);
         }
