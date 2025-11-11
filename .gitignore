@@ -81,4 +81,5 @@ coverage
 !.vscode/launch.json
 !.vscode/extensions.json
 
-.pnpm-lock.yaml
+/src/generated/prisma
+pnpm-lock.yaml
