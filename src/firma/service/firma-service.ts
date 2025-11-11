@@ -198,7 +198,7 @@ export class FirmaService {
 
        #checkKeys(keys: string[]) {
         this.#logger.debug('#checkKeys: keys=%o', keys);
-        // Ist jeder Suchparameter auch eine Property von Buch oder "schlagwoerter"?
+        // Ist jeder Suchparameter auch eine Property von Firma oder "schlagwoerter"?
         let validKeys = true;
         keys.forEach((key) => {
             if (

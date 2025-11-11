@@ -108,7 +108,7 @@ export class FirmaMutationResolver {
             };
             return standort;
         });
-        const buch: FirmaCreate = {
+        const frima: FirmaCreate = {
             version: 0,
             name: firmaDTO.name,
             branche: firmaDTO.branche,
@@ -125,7 +125,7 @@ export class FirmaMutationResolver {
             },
             standorte: { create: standorte ?? [] },
         };
-        return buch;
+        return frima;
     }
 
     #firmaUpdateDtoToFirmaUpdate(firmaDTO: FirmaUpdateDTO): FirmaUpdate {
