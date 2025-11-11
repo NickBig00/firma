@@ -131,6 +131,12 @@ export class FirmaService {
             return await this.#findAll(pageable);
         }
 
+        // Falsche Namen fuer Suchparameter?
+        if (!this.#checkKeys(keys)) {
+            this.#logger.debug('Ungueltige Suchparameter');
+            throw new NotFoundException('Ungueltige Suchparameter');
+        }
+
         const where = this.#whereBuilder.build(suchparameter);
         const { number, size } = pageable;
         const firmen: FirmaMitGeschaeftsfuehrer[] = await this.#prisma.firma.findMany({
@@ -189,4 +195,24 @@ export class FirmaService {
         this.#logger.debug('createSlice: firmaSlice=%o', firmaSlice);
         return firmaSlice;
     }
+
+       #checkKeys(keys: string[]) {
+        this.#logger.debug('#checkKeys: keys=%o', keys);
+        // Ist jeder Suchparameter auch eine Property von Buch oder "schlagwoerter"?
+        let validKeys = true;
+        keys.forEach((key) => {
+            if (
+                !suchparameterNamen.includes(key)
+            ) {
+                this.#logger.debug(
+                    '#checkKeys: ungueltiger Suchparameter "%s"',
+                    key,
+                );
+                validKeys = false;
+            }
+        });
+
+        return validKeys;
+    }
+
 }
