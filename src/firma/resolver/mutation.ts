@@ -118,7 +118,7 @@ export class FirmaMutationResolver {
             gruendungsjahr: firmaDTO.gruendungsjahr,
             geschaeftsfuehrer: {
                 create: {
-                    titel: firmaDTO.geschaeftsfuehrer.email,
+                    email: firmaDTO.geschaeftsfuehrer.email,
                     name: firmaDTO.geschaeftsfuehrer.name,
                     telefon: firmaDTO.geschaeftsfuehrer.telefon ?? null,
                 },

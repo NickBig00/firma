@@ -34,7 +34,7 @@ export class FirmaService {
 
     readonly #prisma: PrismaClient;
     readonly #whereBuilder: WhereBuilder;
-    readonly #includeGeschaeftsfuehrer: FirmaInclude = { titel: true };
+    readonly #includeGeschaeftsfuehrer: FirmaInclude = { geschaeftsfuehrer: true };
     readonly #includeGeschaeftsfuehrerundStandorte: FirmaInclude = {
         geschaeftsfuehrer: true,
         standorte: true,
