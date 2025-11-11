@@ -68,9 +68,11 @@ export class FirmaService {
                 include,
             });
         if (firma === null) {
-            this.#logger.debug('Es gibt kein Buch mit der ID %d', id);
-            throw new NotFoundException(`Es gibt kein Buch mit der ID ${id}.`);
+            this.#logger.debug('Es gibt keine Firma mit der ID %d', id);
+            throw new NotFoundException(`Es gibt keine FIrma mit der ID ${id}.`);
         }
+        firma.schlagwoerter ??= [];
+
 
         this.#logger.debug('findById: firma=%o', firma);
         return firma;
@@ -86,7 +88,7 @@ export class FirmaService {
     ): Promise<Readonly<FirmaFile> | undefined> {
         this.#logger.debug('findFileByFirmaId: firmaId=%d', firmaId);
         const firmaFile: FirmaFile | null =
-            await this.#prisma.buchFile.findUnique({ where: { firmaId } });
+            await this.#prisma.firmaFile.findUnique({ where: { firmaId } });
         if (firmaFile === null) {
             this.#logger.debug('findFileByFirmaId: Keine Datei gefunden');
             return;
@@ -101,10 +103,90 @@ export class FirmaService {
             firmaFile.firmaId,
         );
 
-        // als Datei im Wurzelverzeichnis des Projekts speichern:
-        // import { writeFile } from 'node:fs/promises';
-        // await writeFile(buchFile.filename, buchFile.data);
-
         return firmaFile;
+    }
+
+    /**
+     * Firmen asynchron suchen.
+     * @param suchparameter JSON-Objekt mit Suchparameter.
+     * @param pageable Maximale Anzahl an Datensätzen und Seitennummer.
+     * @returns Ein JSON-Array mit den gefundenen Firmen.
+     * @throws NotFoundException falls keine Firmen gefunden wurden.
+     */
+    async find(
+        suchparameter: Suchparameter | undefined,
+        pageable: Pageable,
+    ): Promise<Readonly<Slice<Readonly<FirmaMitGeschaeftsfuehrer>>>> {
+        this.#logger.debug(
+            'find: suchparameter=%s, pageable=%o',
+            JSON.stringify(suchparameter),
+            pageable,
+        );
+
+        if (suchparameter === undefined) {
+            return await this.#findAll(pageable);
+        }
+        const keys = Object.keys(suchparameter);
+        if (keys.length === 0) {
+            return await this.#findAll(pageable);
+        }
+
+        const where = this.#whereBuilder.build(suchparameter);
+        const { number, size } = pageable;
+        const firmen: FirmaMitGeschaeftsfuehrer[] = await this.#prisma.firma.findMany({
+            where,
+            skip: number * size,
+            take: size,
+            include: this.#includeGeschaeftsfuehrer,
+        });
+        if (firmen.length === 0) {
+            this.#logger.debug('find: Keine Firmen gefunden');
+            throw new NotFoundException(
+                `Keine Firmen gefunden: ${JSON.stringify(suchparameter)}, Seite ${pageable.number}}`,
+            );
+        }
+        const totalElements = await this.count();
+        return this.#createSlice(firmen, totalElements);
+    }
+
+    /**
+     * Anzahl aller Firmen zurückliefern.
+     * @returns Anzahl der gefundenen Firmen.
+     */
+    async count() {
+        this.#logger.debug('count');
+        const count = await this.#prisma.firma.count();
+        this.#logger.debug('count: %d', count);
+        return count;
+    }
+
+    async #findAll(pageable: Pageable): Promise<Readonly<Slice<FirmaMitGeschaeftsfuehrer>>> {
+        const { number, size } = pageable;
+        const firmen: FirmaMitGeschaeftsfuehrer[] = await this.#prisma.firma.findMany({
+            skip: number * size,
+            take: size,
+            include: this.#includeGeschaeftsfuehrer,
+        });
+        if (firmen.length === 0) {
+            this.#logger.debug('#findAll: Keine Firmen gefunden');
+            throw new NotFoundException(`Ungueltige Seite "${number}"`);
+        }
+        const totalElements = await this.count();
+        return this.#createSlice(firmen, totalElements);
+    }
+
+    #createSlice(
+        firmen: FirmaMitGeschaeftsfuehrer[],
+        totalElements: number,
+    ): Readonly<Slice<FirmaMitGeschaeftsfuehrer>> {
+        firmen.forEach((firma) => {
+            firma.schlagwoerter ??= [];
+        });
+        const firmaSlice: Slice<FirmaMitGeschaeftsfuehrer> = {
+            content: firmen,
+            totalElements,
+        };
+        this.#logger.debug('createSlice: firmaSlice=%o', firmaSlice);
+        return firmaSlice;
     }
 }
