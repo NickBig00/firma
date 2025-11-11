@@ -1,0 +1,3 @@
+CREATE SCHEMA IF NOT EXISTS AUTHORIZATION firma;
+
+ALTER ROLE firma SET search_path = 'firma';
