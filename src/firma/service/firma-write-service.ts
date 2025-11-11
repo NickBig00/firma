@@ -17,8 +17,8 @@ import { PrismaService } from './prisma-service.js';
 export type FirmaCreate = Prisma.FirmaCreateInput;
 type FirmaCreated = Prisma.FirmaGetPayload<{
     include: {
-        titel: true;
-        abbildungen: true;
+        geschaeftsfuehrer: true;
+        standorte: true;
     };
 }>;
 
@@ -76,12 +76,12 @@ export class FirmaWriteService {
         await this.#prisma.$transaction(async (tx) => {
             firmaDb = await tx.firma.create({
                 data: firma,
-                include: { titel: true, abbildungen: true },
+                include: { geschaeftsfuehrer: true, standorte: true },
             });
         });
         await this.#sendmail({
             id: firmaDb?.id ?? 'N/A',
-            titel: firmaDb?.name ?? 'N/A',
+            name: firmaDb?.name ?? 'N/A',
         });
 
         this.#logger.debug('create: firmaDb.id=%s', firmaDb?.id ?? 'N/A');
