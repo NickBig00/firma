@@ -23,7 +23,7 @@ export class FirmaDTO {
 
   @ApiProperty({ example: 2500000, description: 'Jahresumsatz in Euro' })
   @IsOptional()
-  readonly umsatz?: number;
+  readonly umsatz: number | undefined;
 
   @ApiProperty({
     example: 'https://www.beispiel-gmbh.de',
@@ -65,7 +65,7 @@ export class FirmaDtoOhneRef {
 
   @ApiProperty({ example: 2500000, description: 'Jahresumsatz in Euro' })
   @IsOptional()
-  readonly umsatz?: number;
+  readonly umsatz: number | undefined;;
 
   @ApiProperty({
     example: 'https://www.beispiel-gmbh.de',
