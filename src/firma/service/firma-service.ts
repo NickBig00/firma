@@ -71,8 +71,6 @@ export class FirmaService {
             this.#logger.debug('Es gibt keine Firma mit der ID %d', id);
             throw new NotFoundException(`Es gibt keine FIrma mit der ID ${id}.`);
         }
-        firma.schlagwoerter ??= [];
-
 
         this.#logger.debug('findById: firma=%o', firma);
         return firma;
@@ -185,9 +183,6 @@ export class FirmaService {
         firmen: FirmaMitGeschaeftsfuehrer[],
         totalElements: number,
     ): Readonly<Slice<FirmaMitGeschaeftsfuehrer>> {
-        firmen.forEach((firma) => {
-            firma.schlagwoerter ??= [];
-        });
         const firmaSlice: Slice<FirmaMitGeschaeftsfuehrer> = {
             content: firmen,
             totalElements,
