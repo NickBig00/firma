@@ -113,8 +113,8 @@ export class FirmaMutationResolver {
             name: firmaDTO.name,
             branche: firmaDTO.branche,
             mitarbeiteranzahl: firmaDTO.mitarbeiteranzahl,
-            umsatz: firmaDTO.umsatz,
-            homepage: firmaDTO.homepage,
+            umsatz: firmaDTO.umsatz ?? null,
+            homepage: firmaDTO.homepage ?? null,
             gruendungsjahr: firmaDTO.gruendungsjahr,
             geschaeftsfuehrer: {
                 create: {
@@ -133,8 +133,8 @@ export class FirmaMutationResolver {
             name: firmaDTO.name,
             branche: firmaDTO.branche,
             mitarbeiteranzahl: firmaDTO.mitarbeiteranzahl,
-            umsatz: firmaDTO.umsatz,
-            homepage: firmaDTO.homepage,
+            umsatz: firmaDTO.umsatz ?? null,
+            homepage: firmaDTO.homepage ?? null,
             gruendungsjahr: firmaDTO.gruendungsjahr,
         };
     }
