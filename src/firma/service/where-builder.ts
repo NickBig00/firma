@@ -4,7 +4,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { Firmaart, Prisma } from '../../generated/prisma/client.js';
+import {Prisma } from '../../generated/prisma/client.js';
 import { type FirmaWhereInput } from '../../generated/prisma/models/Firma.js';
 import { getLogger } from '../../logger/logger.js';
 import { type Suchparameter } from './suchparameter.js';
@@ -58,9 +58,6 @@ export class WhereBuilder {
                         },
                     };
                     break;
-                case 'email':
-                    where.email = { equals: value as string };
-                    break;
                 case 'branche':
                     where.branche = { equals: value as string };
                     break;
@@ -72,7 +69,7 @@ export class WhereBuilder {
                     break;
                 }
                 case 'mitarbeiterzahl':
-                    where.mitarbeiterzahl =  Number.parseInt(value as string);
+                    where.mitarbeiteranzahl =  Number.parseInt(value as string);
                     break;
                 case 'gruendungsjahr':
                     where.gruendungsjahr =  Number.parseInt(value as string);

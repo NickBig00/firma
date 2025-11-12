@@ -7,7 +7,7 @@ import {
     FirmaService,
     type FirmaMitGeschaeftsfuehrer,
     type FirmaMitGeschaeftsfuehrerundStandorten,
-} from '../service/firma-service.ts';
+} from '../service/firma-service.js';
 import { createPageable } from '../service/pageable.js';
 import { Slice } from '../service/slice.js';
 import { Suchparameter } from '../service/suchparameter.js';

@@ -7,7 +7,7 @@ import {
 } from '../../generated/prisma/client.js';
 import { getLogger } from '../../logger/logger.js';
 import { MailService } from '../../mail/mail-service.js';
-import { FirmaService } from './firma-service.ts';
+import { FirmaService } from './firma-service.js';
 import {
     VersionInvalidException,
     VersionOutdatedException,
