@@ -1,4 +1,4 @@
 id;name;email;telefon;firma_id
-1000;Anna Meier;anna.meier@techvision.de;+49 30 123456;1000
-1001;Jonas Keller;jonas.keller@greenfoods.de;+49 89 654321;1001
-1002;Laura Schmidt;laura.schmidt@autofuture.de;+49 211 987654;1002
+1;Anna Meier;anna.meier@techvision.de;+49 30 123456;10
+2;Jonas Keller;jonas.keller@greenfoods.de;+49 89 654321;20
+3;Laura Schmidt;laura.schmidt@autofuture.de;+49 211 987654;30
