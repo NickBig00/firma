@@ -6,9 +6,9 @@ import { CONTENT_TYPE, IF_NONE_MATCH, restURL } from '../constants.mjs';
 // -----------------------------------------------------------------------------
 // T e s t d a t e n
 // -----------------------------------------------------------------------------
-const ids = [1, 20];
+const ids = [10, 20];
 const idNichtVorhanden = 999999;
-const idsETag = [1, 20];
+const idsETag = [10, 20];
 const idFalsch = 'xy';
 
 // -----------------------------------------------------------------------------
