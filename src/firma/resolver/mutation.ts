@@ -1,18 +1,3 @@
-// Copyright (C) 2021 - present Juergen Zimmermann, Hochschule Karlsruhe
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program. If not, see <https://www.gnu.org/licenses/>.
-
 // eslint-disable-next-line max-classes-per-file
 import { UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
@@ -20,12 +5,12 @@ import { IsInt, IsNumberString, Min } from 'class-validator';
 import { AuthGuard, Roles } from 'nest-keycloak-connect';
 import { getLogger } from '../../logger/logger.js';
 import { ResponseTimeInterceptor } from '../../logger/response-time.js';
-import { BuchDTO } from '../controller/buch-dto.js';
+import { FirmaDTO } from '../controller/firma-dto.js';
 import {
-    BuchWriteService,
-    BuchCreate,
-    BuchUpdate,
-} from '../service/buch-write-service.js';
+    FirmaWriteService,
+    FirmaCreate,
+    FirmaUpdate,
+} from '../service/firma-write-service.js';
 import { type IdInput } from './query.js';
 import { HttpExceptionFilter } from './http-exception-filter.js';
 
@@ -51,7 +36,7 @@ export type DeletePayload = {
     readonly success: boolean;
 };
 
-export class BuchUpdateDTO extends BuchDTO {
+export class FirmaUpdateDTO extends FirmaDTO {
     @IsNumberString()
     readonly id!: string;
 
@@ -59,47 +44,46 @@ export class BuchUpdateDTO extends BuchDTO {
     @Min(0)
     readonly version!: number;
 }
-@Resolver('Buch')
+@Resolver('Firma')
 // alternativ: globale Aktivierung der Guards https://docs.nestjs.com/security/authorization#basic-rbac-implementation
 @UseGuards(AuthGuard)
 @UseFilters(HttpExceptionFilter)
 @UseInterceptors(ResponseTimeInterceptor)
-export class BuchMutationResolver {
-    readonly #service: BuchWriteService;
+export class FirmaMutationResolver {
+    readonly #service: FirmaWriteService;
 
-    readonly #logger = getLogger(BuchMutationResolver.name);
+    readonly #logger = getLogger(FirmaMutationResolver.name);
 
-    constructor(service: BuchWriteService) {
+    constructor(service: FirmaWriteService) {
         this.#service = service;
     }
 
     @Mutation()
     @Roles('admin', 'user')
-    async create(@Args('input') buchDTO: BuchDTO) {
-        this.#logger.debug('create: buchDTO=%o', buchDTO);
+    async create(@Args('input') firmaDTO: FirmaDTO) {
+        this.#logger.debug('create: FirmaDTO=%o', firmaDTO);
 
-        const buch = this.#buchDtoToBuchCreate(buchDTO);
-        const id = await this.#service.create(buch);
-        this.#logger.debug('createBuch: id=%d', id);
+        const firma = this.#firmaDtoToFirmaCreate(firmaDTO);
+        const id = await this.#service.create(firma);
+        this.#logger.debug('createFirma: id=%d', id);
         const payload: CreatePayload = { id };
         return payload;
     }
 
     @Mutation()
     @Roles('admin', 'user')
-    async update(@Args('input') buchDTO: BuchUpdateDTO) {
-        this.#logger.debug('update: buch=%o', buchDTO);
+    async update(@Args('input') firmaDTO: FirmaUpdateDTO) {
+        this.#logger.debug('update: firma=%o', firmaDTO);
 
-        const buch = this.#buchUpdateDtoToBuchUpdate(buchDTO);
-        const versionStr = `"${buchDTO.version.toString()}"`;
+        const firma = this.#firmaUpdateDtoToFirmaUpdate(firmaDTO);
+        const versionStr = `"${firmaDTO.version.toString()}"`;
 
         const versionResult = await this.#service.update({
-            id: Number.parseInt(buchDTO.id, 10),
-            buch,
+            id: Number.parseInt(firmaDTO.id, 10),
+            firma,
             version: versionStr,
         });
-        // TODO BadUserInputError
-        this.#logger.debug('updateBuch: versionResult=%d', versionResult);
+        this.#logger.debug('updateFirma: versionResult=%d', versionResult);
         const payload: UpdatePayload = { version: versionResult };
         return payload;
     }
@@ -114,76 +98,44 @@ export class BuchMutationResolver {
         return payload;
     }
 
-    #buchDtoToBuchCreate(buchDTO: BuchDTO): BuchCreate {
-        // "Optional Chaining" ab ES2020
-        const abbildungen = buchDTO.abbildungen?.map((abbildungDTO) => {
-            const abbildung = {
-                beschriftung: abbildungDTO.beschriftung,
-                contentType: abbildungDTO.contentType,
+    #firmaDtoToFirmaCreate(firmaDTO: FirmaDTO): FirmaCreate {
+        const standorte = firmaDTO.standorte?.map((standortDTO) => {
+            const standort = {
+                adresse: standortDTO.adresse,
+                land: standortDTO.land,
+                ort: standortDTO.ort,
+                plz: standortDTO.plz,
             };
-            return abbildung;
+            return standort;
         });
-        const buch: BuchCreate = {
+        const frima: FirmaCreate = {
             version: 0,
-            isbn: buchDTO.isbn,
-            rating: buchDTO.rating,
-            art: buchDTO.art ?? null,
-            preis: buchDTO.preis.toNumber(),
-            rabatt: buchDTO.rabatt?.toNumber() ?? 0,
-            lieferbar: buchDTO.lieferbar ?? false,
-            datum: buchDTO.datum ?? null,
-            homepage: buchDTO.homepage ?? null,
-            schlagwoerter: buchDTO.schlagwoerter ?? [],
-            titel: {
+            name: firmaDTO.name,
+            branche: firmaDTO.branche,
+            mitarbeiteranzahl: firmaDTO.mitarbeiteranzahl,
+            umsatz: firmaDTO.umsatz ?? null,
+            homepage: firmaDTO.homepage ?? null,
+            gruendungsjahr: firmaDTO.gruendungsjahr,
+            geschaeftsfuehrer: {
                 create: {
-                    titel: buchDTO.titel.titel,
-                    untertitel: buchDTO.titel.untertitel ?? null,
+                    email: firmaDTO.geschaeftsfuehrer.email,
+                    name: firmaDTO.geschaeftsfuehrer.name,
+                    telefon: firmaDTO.geschaeftsfuehrer.telefon ?? null,
                 },
             },
-            abbildungen: { create: abbildungen ?? [] },
+            standorte: { create: standorte ?? [] },
         };
-        return buch;
+        return frima;
     }
 
-    #buchUpdateDtoToBuchUpdate(buchDTO: BuchUpdateDTO): BuchUpdate {
+    #firmaUpdateDtoToFirmaUpdate(firmaDTO: FirmaUpdateDTO): FirmaUpdate {
         return {
-            isbn: buchDTO.isbn,
-            rating: buchDTO.rating,
-            art: buchDTO.art ?? null,
-            preis: buchDTO.preis.toNumber(),
-            rabatt: buchDTO.rabatt?.toNumber() ?? 0,
-            lieferbar: buchDTO.lieferbar ?? false,
-            datum: buchDTO.datum ?? null,
-            homepage: buchDTO.homepage ?? null,
-            schlagwoerter: buchDTO.schlagwoerter ?? [],
+            name: firmaDTO.name,
+            branche: firmaDTO.branche,
+            mitarbeiteranzahl: firmaDTO.mitarbeiteranzahl,
+            umsatz: firmaDTO.umsatz ?? null,
+            homepage: firmaDTO.homepage ?? null,
+            gruendungsjahr: firmaDTO.gruendungsjahr,
         };
     }
-
-    // #errorMsgCreateBuch(err: CreateError) {
-    //     switch (err.type) {
-    //         case 'IsbnExists': {
-    //             return `Die ISBN ${err.isbn} existiert bereits`;
-    //         }
-    //         default: {
-    //             return 'Unbekannter Fehler';
-    //         }
-    //     }
-    // }
-
-    // #errorMsgUpdateBuch(err: UpdateError) {
-    //     switch (err.type) {
-    //         case 'BuchNotExists': {
-    //             return `Es gibt kein Buch mit der ID ${err.id}`;
-    //         }
-    //         case 'VersionInvalid': {
-    //             return `"${err.version}" ist keine gueltige Versionsnummer`;
-    //         }
-    //         case 'VersionOutdated': {
-    //             return `Die Versionsnummer "${err.version}" ist nicht mehr aktuell`;
-    //         }
-    //         default: {
-    //             return 'Unbekannter Fehler';
-    //         }
-    //     }
-    // }
 }

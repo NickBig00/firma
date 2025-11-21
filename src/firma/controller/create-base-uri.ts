@@ -1,6 +1,6 @@
 import { type Request } from 'express';
 import { nodeConfig } from '../../config/node.js';
-import { BuchService } from '../service/firma-service.js';
+import { FirmaService } from '../service/firma-service.js';
 
 const port = `:${nodeConfig.port}`;
 
@@ -16,7 +16,7 @@ export const createBaseUri: ({
     const indexLastSlash = basePath.lastIndexOf('/');
     if (indexLastSlash > 0) {
         const idStr = basePath.slice(indexLastSlash + 1);
-        if (BuchService.ID_PATTERN.test(idStr)) {
+        if (FirmaService.ID_PATTERN.test(idStr)) {
             basePath = basePath.slice(0, indexLastSlash);
         }
     }

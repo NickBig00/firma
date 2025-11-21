@@ -27,11 +27,10 @@ import {
     ApiOperation,
     ApiParam,
     ApiPreconditionFailedResponse,
-    ApiResponse,
     ApiTags,
 } from '@nestjs/swagger';
 import { type Request, type Response } from 'express';
-import { AuthGuard, Public, Roles } from 'nest-keycloak-connect';
+import { AuthGuard, Roles } from 'nest-keycloak-connect';
 import { paths } from '../../config/paths.js';
 import { getLogger } from '../../logger/logger.js';
 import { ResponseTimeInterceptor } from '../../logger/response-time.js';
@@ -133,17 +132,22 @@ export class FirmaWriteController {
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<Response> {
-        const { buffer, originalname, mimetype } = file;
-        this.#logger.debug('addFile: id=%d, filename=%s, mimetype=%s', id, originalname, mimetype);
+        const { buffer, originalname, size } = file;
+        this.#logger.debug('addFile: id=%d, filename=%s, size=%s', id, originalname, size);
 
         const firmaFile: FirmaFileCreated | undefined = await this.#service.addFile(
             id,
             buffer,
             originalname,
-            mimetype,
+            size,
         );
-        this.#logger.debug('addFile: firmaFile=%o', firmaFile);
-
+        this.#logger.debug(
+            'addFile: id=%d, byteLength=%d, filename=%s, mimetype=%s',
+            firmaFile?.id ?? -1,
+            firmaFile?.data.byteLength ?? -1,
+            firmaFile?.filename ?? 'undefined',
+            firmaFile?.mimetype ?? 'null',
+        );
         const location = `${createBaseUri(req)}/file/${id}`;
         return res.location(location).send();
     }
@@ -231,14 +235,14 @@ export class FirmaWriteController {
      * @param dto Die empfangenen Firmendaten (DTO).
      * @returns Datenstruktur für das Anlegen einer Firma in der Datenbank.
      */
-    private dtoToFirmaCreate(dto: FirmaDTO): FirmaCreate {
+    #dtoToFirmaCreate(dto: FirmaDTO): FirmaCreate {
         const firma: FirmaCreate = {
             version: 0,
             name: dto.name,
             gruendungsjahr: dto.gruendungsjahr,
             branche: dto.branche,
             mitarbeiteranzahl: dto.mitarbeiteranzahl,
-            umsatz: dto.umsatz,
+            umsatz: dto.umsatz ?? null,
             homepage: dto.homepage ?? null,
             geschaeftsfuehrer: {
                 create: {
@@ -273,7 +277,7 @@ export class FirmaWriteController {
             gruendungsjahr: dto.gruendungsjahr,
             branche: dto.branche,
             mitarbeiteranzahl: dto.mitarbeiteranzahl,
-            umsatz: dto.umsatz,
+            umsatz: dto.umsatz ?? null,
             homepage: dto.homepage ?? null,
         };
     }

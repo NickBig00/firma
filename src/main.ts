@@ -46,13 +46,13 @@ const { httpsOptions, port } = nodeConfig;
 // "Arrow Function" ab ES 2015
 const setupSwagger = (app: INestApplication) => {
     const config = new DocumentBuilder()
-        .setTitle('Buch')
+        .setTitle('Firma')
         .setDescription('Beispiel mit Nest')
         .setVersion('2025.10.1')
         .addBearerAuth()
         .build();
     const document = SwaggerModule.createDocument(app, config);
-    const options: SwaggerCustomOptions = { customSiteTitle: 'Buch 2025.10.1' };
+    const options: SwaggerCustomOptions = { customSiteTitle: 'Firma 2025.10.1' };
     SwaggerModule.setup(paths.swagger, app, document, options);
 };
 
