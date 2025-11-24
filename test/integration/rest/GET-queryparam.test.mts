@@ -1,22 +1,19 @@
 
 
 import { HttpStatus } from '@nestjs/common';
-import BigNumber from 'bignumber.js';
 import { describe, expect, test } from 'vitest';
 import { type Page } from '../../../src/firma/controller/page.js';
 import { CONTENT_TYPE, restURL } from '../constants.mjs';
 import { Firma } from '../../../src/generated/prisma/client.js';
-import { FirmaMitTitel } from '../../../src/buch/service/firma-service.js';
 import { FirmaMitGeschaeftsfuehrer } from '../../../src/firma/service/firma-service.js';
 
 // -----------------------------------------------------------------------------
 // T e s t d a t e n
 // -----------------------------------------------------------------------------
-const geschaeftsfuehrerArray = ['Anna', 'Jonas', 'Laura'];
-const geschaeftsfuehrerNichtVorhanden = ['xxx', 'yyy', 'zzz'];
+const geschaeftsfuehrerArray = ['a'];
+const geschaeftsfuehrerNichtVorhanden = ['xererxx'];
 const namen = ['AutoFuture GmbH', 'GreenFoods AG', 'TechVision GmbH'];
 const umsatzMin = [8500.00, 85000.00];
-const preisMax = [33.5, 66.6];
 
 // -----------------------------------------------------------------------------
 // T e s t s
@@ -44,7 +41,7 @@ describe('GET /rest', () => {
     });
 
     test.concurrent.each(geschaeftsfuehrerArray)(
-        'Firmen mit Teil-namen %s suchen',
+        'Firmen mit  geschaeftsfuehrer namen %s suchen',
         async (name) => {
             // given
             const params = new URLSearchParams({ name });
@@ -62,7 +59,7 @@ describe('GET /rest', () => {
 
             expect(body).toBeDefined();
 
-            body.content
+           body.content
                 .map((firma) => firma.geschaeftsfuehrer)
                 .forEach((g) =>
                     expect(g?.name?.toLowerCase()).toStrictEqual(
@@ -73,10 +70,10 @@ describe('GET /rest', () => {
     );
 
     test.concurrent.each(geschaeftsfuehrerNichtVorhanden)(
-        'Firmen zu nicht vorhandenem Teil-Name %s suchen',
-        async (name) => {
+        'Firmen zu nicht vorhandenem Teil Name %s suchen',
+        async (geschaeftsfuehrer) => {
             // given
-            const params = new URLSearchParams({ name });
+            const params = new URLSearchParams({ geschaeftsfuehrer });
             const url = `${restURL}?${params}`;
 
             // when
@@ -87,7 +84,7 @@ describe('GET /rest', () => {
         },
     );
 
-    test.concurrent.each(namen)('Buch mit Namen %s suchen', async (name) => {
+    test.concurrent.each(namen)('Firma mit Namen %s suchen', async (name) => {
         // given
         const params = new URLSearchParams({ name });
         const url = `${restURL}?${params}`;
@@ -130,13 +127,13 @@ describe('GET /rest', () => {
             expect(headers.get(CONTENT_TYPE)).toMatch(/json/iu);
 
             const body = (await response.json()) as Page<Firma>;
+        body.content
+            .map((firma) => firma.umsatz)
+            .forEach((r) => {
+                console.log("typeof r:", typeof r, "typeof umsatz:", typeof umsatz, r, umsatz);
+                expect(r).toBeGreaterThanOrEqual(umsatz);
+});
 
-            // Jede Firma hat eine Bewertung >= rating
-            body.content
-                .map((firma) => firma.umsatz)
-                .forEach((r) => expect(r).toBeGreaterThanOrEqual(umsatz));
-        },
-    );
 
     test.concurrent(
         'Keine Firmen zu einer nicht-vorhandenen Property',
