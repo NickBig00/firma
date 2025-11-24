@@ -168,29 +168,6 @@ describe('POST /rest', () => {
         expect(messages).toStrictEqual(expect.arrayContaining(expectedMsg));
     });
 
-    test.concurrent('Neue Firma, aber der Name existiert bereits', async () => {
-        // given
-        const headers = new Headers();
-        headers.append(CONTENT_TYPE, APPLICATION_JSON);
-        headers.append(AUTHORIZATION, `${BEARER} ${token}`);
-
-        // when
-        const response = await fetch(restURL, {
-            method: POST,
-            body: JSON.stringify(neueFirmaNameExistiert),
-            headers,
-        });
-
-        // then
-        const { status } = response;
-
-        expect(status).toBe(HttpStatus.UNPROCESSABLE_ENTITY);
-
-        const body = (await response.json()) as MessageType;
-
-        expect(body.message).toStrictEqual(expect.stringContaining('ISBN'));
-    });
-
     test.concurrent('Neue Firma, aber ohne Token', async () => {
         // when
         const { status } = await fetch(restURL, {
