@@ -61,10 +61,13 @@ export class WhereBuilder {
                 case 'branche':
                     where.branche = { equals: value as string };
                     break;
+                case 'name':
+                    where.name = { equals: value as string };
+                    break;
                 case 'umsatz': {
                     const umsatzNumber = Number.parseInt(value as string);
                     if (!Number.isNaN(umsatzNumber)) {
-                        where.umsatz = umsatzNumber;
+                        where.umsatz = { gte: umsatzNumber };
                     }
                     break;
                 }
