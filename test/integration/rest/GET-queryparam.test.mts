@@ -131,8 +131,12 @@ describe('GET /rest', () => {
             .map((firma) => firma.umsatz)
             .forEach((r) => {
                 console.log("typeof r:", typeof r, "typeof umsatz:", typeof umsatz, r, umsatz);
+
                 expect(r).toBeGreaterThanOrEqual(umsatz);
+        },
+    );
 });
+
 
 
     test.concurrent(
@@ -147,6 +151,6 @@ describe('GET /rest', () => {
 
             // then
             expect(status).toBe(HttpStatus.NOT_FOUND);
-        },
+          },
     );
 });
