@@ -44,11 +44,11 @@ const geaenderteFirmaIdNichtVorhanden: Omit<FirmaDtoOhneRef, 'gruendungsjahr' | 
 const idNichtVorhanden = '999999';
 
 const geaenderteFirmaInvalid: Record<string, unknown> = {
-    name: 'TechVision AG',
-    branche: "Softwareentwicklung/ Consulting",
-    mitarbeiteranzahl: 60,
-    homepage: 'https://software-gmbh.de',
-    gruendungsjahr: "2022.20.11",
+    name: 'A', // zu kurz
+    branche: 'vielzulangerbranchennamederfirmaistdasaufjedenfalldeinfintinininfini', // zu lang
+    mitarbeiteranzahl: -2,
+    homepage: 'not valid url', // keine URL
+    gruendungsjahr: 1700, // zu alt
     umsatz: -1000
 };
 
@@ -119,13 +119,11 @@ describe('PUT /rest/:id', () => {
         headers.append(AUTHORIZATION, `${BEARER} ${token}`);
         const expectedMsg = [
             expect.stringMatching(/^name /u),
-            expect.stringMatching(/^email /u),
             expect.stringMatching(/^gruendungsjahr /u),
             expect.stringMatching(/^homepage /u),
             expect.stringMatching(/^branche /u),
             expect.stringMatching(/^umsatz /u),
             expect.stringMatching(/^mitarbeiteranzahl /u),
-            expect.stringMatching(/^geschaeftsfuehrer.name /u),
         ];
 
         // when
@@ -146,7 +144,7 @@ describe('PUT /rest/:id', () => {
         expect(messages).toStrictEqual(expect.arrayContaining(expectedMsg));
     });
 
-    test('Vorhandenes Buch aendern, aber ohne Versionsnummer', async () => {
+    test('Vorhande Firma aendern, aber ohne Versionsnummer', async () => {
         // given
         const url = `${restURL}/${idVorhanden}`;
         const headers = new Headers();

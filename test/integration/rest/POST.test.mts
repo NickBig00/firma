@@ -1,5 +1,4 @@
 import { HttpStatus } from '@nestjs/common';
-import BigNumber from 'bignumber.js';
 import { beforeAll, describe, expect, test } from 'vitest';
 import { type FirmaDTO } from '../../../src/firma/controller/firma-dto.js';
 import { FirmaService } from '../../../src/firma/service/firma-service.js';
@@ -43,11 +42,11 @@ const neueFirma: Omit<FirmaDTO, 'gruendungsjahr' | 'umsatz'> & {
 };
 const neueFirmaInvalid: Record<string, unknown> = {
     name: 'A', // zu kurz
-    gruendungsjahr: 1800, // zu alt
+    gruendungsjahr: 1700, // zu alt
     umsatz: -1000.0, // negativ
-    branche: '',
+    branche: 'vielzulangerbranchennamederfirmaistdasaufjedenfalldeinfintinininfini', // zu lang
     mitarbeiteranzahl: -5, // negativ
-    homepage: 'not-a-valid-url', // keine URL
+    homepage: 'not valid url', // keine URL
     geschaeftsfuehrer: {
         name: '', // leer
         email: 'invalid-email', // kein Email-Format
@@ -62,27 +61,7 @@ const neueFirmaInvalid: Record<string, unknown> = {
         },
     ]
 };
-const neueFirmaNameExistiert: FirmaDTO = {
-    name: 'TechVision GmbH', // existiert bereits
-    gruendungsjahr: 2020,
-    umsatz: 500000.0,
-    branche: "Technologie",
-    mitarbeiteranzahl: 100,
-    homepage: 'https://techvision.de',
-    geschaeftsfuehrer: {
-        name: 'petermeier',
-        email: 'petermeier@gmx.de',
-        telefon: '12eee3',
-    },
-    standorte: [
-        {
-            adresse: 'Beispielweg 1',
-            plz: '12',
-            ort: 'Stadt',
-            land: 'Land',
-        },
-    ]
-};
+
 
 type MessageType = { message: string };
 
@@ -139,7 +118,6 @@ describe('POST /rest', () => {
 
         const expectedMsg = [
             expect.stringMatching(/^name /u),
-            expect.stringMatching(/^email /u),
             expect.stringMatching(/^gruendungsjahr /u),
             expect.stringMatching(/^homepage /u),
             expect.stringMatching(/^branche /u),

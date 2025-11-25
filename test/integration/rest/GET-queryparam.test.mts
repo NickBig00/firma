@@ -42,9 +42,9 @@ describe('GET /rest', () => {
 
     test.concurrent.each(geschaeftsfuehrerArray)(
         'Firmen mit  geschaeftsfuehrer namen %s suchen',
-        async (name) => {
+        async (geschaeftsfuehrer) => {
             // given
-            const params = new URLSearchParams({ name });
+            const params = new URLSearchParams({ geschaeftsfuehrer });
             const url = `${restURL}?${params}`;
 
             // when
@@ -63,7 +63,7 @@ describe('GET /rest', () => {
                 .map((firma) => firma.geschaeftsfuehrer)
                 .forEach((g) =>
                     expect(g?.name?.toLowerCase()).toStrictEqual(
-                        expect.stringContaining(name),
+                        expect.stringContaining(geschaeftsfuehrer),
                     ),
                 );
         },
@@ -132,7 +132,7 @@ describe('GET /rest', () => {
             .forEach((r) => {
                 console.log("typeof r:", typeof r, "typeof umsatz:", typeof umsatz, r, umsatz);
 
-                expect(r).toBeGreaterThanOrEqual(umsatz);
+                expect(Number(r)).toBeGreaterThanOrEqual(umsatz);
         },
     );
 });
