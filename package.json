@@ -34,7 +34,7 @@
   "scripts": {
     "prebuild": "pnpm run clean",
     "build": "nest build",
-    "start": "node --env-file=.env dist/src/main.js",
+    "start": "node --env-file=.env dist/main.js",
     "pre:dev": "pnpm run copy-resources",
     "dev": "nest start --env-file=.env --watch",
     "test": "set LOG_LEVEL=info&& vitest --ui",
