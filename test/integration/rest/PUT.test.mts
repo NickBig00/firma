@@ -1,7 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
-import BigNumber from 'bignumber.js';
 import { beforeAll, describe, expect, test } from 'vitest';
-import { type BuchDtoOhneRef } from '../../../src/buch/controller/buch-dto.js';
+import { FirmaDtoOhneRef } from '../../../src/firma/controller/firma-dto.js';
 import {
     APPLICATION_JSON,
     AUTHORIZATION,
@@ -12,11 +11,8 @@ import {
     restURL,
 } from '../constants.mjs';
 import { getToken } from '../token.mjs';
-import { FirmaDtoOhneRef } from '../../../src/firma/controller/firma-dto.js';
 
-// -----------------------------------------------------------------------------
-// T e s t d a t e n
-// -----------------------------------------------------------------------------
+// Testdaten
 const geaenderteFirma: Omit<FirmaDtoOhneRef, 'gruendungsjahr' | 'umsatz'> & {
     gruendungsjahr: number;
     umsatz: number;
@@ -163,7 +159,7 @@ describe('PUT /rest/:id', () => {
 
         const body = await response.text();
 
-        expect(body).toBe(`Header "${IF_MATCH}" fehlt`);
+        expect(body).toBe(`Header "${IF_MATCH}" fehlt`); // API erwartet zwingend eine Versionsnummer (If-Match)
     });
 
     test('Vorhandene Firma aendern, aber mit alter Versionsnummer', async () => {
