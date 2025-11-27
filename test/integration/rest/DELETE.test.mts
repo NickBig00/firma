@@ -4,15 +4,10 @@ import { beforeAll, describe, expect, test } from 'vitest';
 import { AUTHORIZATION, BEARER, DELETE, restURL } from '../constants.mjs';
 import { getToken } from '../token.mjs';
 
-// -----------------------------------------------------------------------------
-// T e s t d a t e n
-// -----------------------------------------------------------------------------
+// Testdaten
 const id = '50';
 
-// -----------------------------------------------------------------------------
-// T e s t s
-// -----------------------------------------------------------------------------
-// Test-Suite
+// Tests für DELETE /rest/:id
 describe('DELETE /rest', () => {
     let token: string;
     let tokenUser: string;
@@ -22,7 +17,7 @@ describe('DELETE /rest', () => {
         tokenUser = await getToken('user', 'p');
     });
 
-    test.concurrent('Vorhandene Firma loeschen', async () => {
+    test.concurrent('Vorhandene Firma erfolgreich löschen', async () => {
         // given
         const url = `${restURL}/${id}`;
         const headers = new Headers();
@@ -38,7 +33,7 @@ describe('DELETE /rest', () => {
         expect(status).toBe(HttpStatus.NO_CONTENT);
     });
 
-    test.concurrent('Firma loeschen, aber ohne Token', async () => {
+    test.concurrent('Löschen ohne Token → 401 Unauthorized', async () => {
         // given
         const url = `${restURL}/${id}`;
 
@@ -65,7 +60,7 @@ describe('DELETE /rest', () => {
         expect(status).toBe(HttpStatus.UNAUTHORIZED);
     });
 
-    test.concurrent('Vorhandene Firma als "user" loeschen', async () => {
+    test.concurrent('Löschen als normaler Nutzer → 403 Forbidden', async () => {
         // given
         const url = `${restURL}/60`;
         const headers = new Headers();
