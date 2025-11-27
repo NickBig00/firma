@@ -30,7 +30,7 @@
   "license": "GPL-3.0",
   "author": "Juergen Zimmermann <Juergen.Zimmermann@h-ka.de> (https://www.h-ka.de)",
   "type": "module",
-  "exports": "./dist/src/main.js",
+  "exports": "./dist/main.js",
   "scripts": {
     "prebuild": "pnpm run clean",
     "build": "nest build",
