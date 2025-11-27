@@ -7,20 +7,15 @@ import { CONTENT_TYPE, restURL } from '../constants.mjs';
 import { Firma } from '../../../src/generated/prisma/client.js';
 import { FirmaMitGeschaeftsfuehrer } from '../../../src/firma/service/firma-service.js';
 
-// -----------------------------------------------------------------------------
-// T e s t d a t e n
-// -----------------------------------------------------------------------------
+// Testdaten
 const geschaeftsfuehrerArray = ['a'];
 const geschaeftsfuehrerNichtVorhanden = ['xererxx'];
 const namen = ['AutoFuture GmbH', 'GreenFoods AG', 'TechVision GmbH'];
 const umsatzMin = [8500.00, 85000.00];
 
-// -----------------------------------------------------------------------------
-// T e s t s
-// -----------------------------------------------------------------------------
-// Test-Suite
+// Tests für GET /rest
 describe('GET /rest', () => {
-    test.concurrent('Alle Firmen', async () => {
+    test.concurrent('Alle Firmen abrufen', async () => {
         // given
 
         // when
@@ -41,7 +36,7 @@ describe('GET /rest', () => {
     });
 
     test.concurrent.each(geschaeftsfuehrerArray)(
-        'Firmen mit  geschaeftsfuehrer namen %s suchen',
+        'Firmen nach Geschäftsführer-Teilnamen %s suchen',
         async (geschaeftsfuehrer) => {
             // given
             const params = new URLSearchParams({ geschaeftsfuehrer });
@@ -70,7 +65,7 @@ describe('GET /rest', () => {
     );
 
     test.concurrent.each(geschaeftsfuehrerNichtVorhanden)(
-        'Firmen zu nicht vorhandenem Teil Name %s suchen',
+        'Keine Firmen bei unbekanntem Geschäftsführer-Teilnamen %s',
         async (geschaeftsfuehrer) => {
             // given
             const params = new URLSearchParams({ geschaeftsfuehrer });
@@ -84,7 +79,7 @@ describe('GET /rest', () => {
         },
     );
 
-    test.concurrent.each(namen)('Firma mit Namen %s suchen', async (name) => {
+    test.concurrent.each(namen)('Firma mit exaktem Namen %s finden', async (name) => {
         // given
         const params = new URLSearchParams({ name });
         const url = `${restURL}?${params}`;
@@ -140,7 +135,7 @@ describe('GET /rest', () => {
 
 
     test.concurrent(
-        'Keine Firmen zu einer nicht-vorhandenen Property',
+        'Keine Firmen bei unbekanntem Query-Parameter',
         async () => {
             // given
             const params = new URLSearchParams({ foo: 'bar' });

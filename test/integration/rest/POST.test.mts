@@ -13,9 +13,7 @@ import {
 } from '../constants.mjs';
 import { getToken } from '../token.mjs';
 
-// -----------------------------------------------------------------------------
-// T e s t d a t e n
-// -----------------------------------------------------------------------------
+// Testdaten
 const neueFirma: Omit<FirmaDTO, 'gruendungsjahr' | 'umsatz'> & {
     gruendungsjahr: number;
     umsatz: number;
@@ -65,10 +63,7 @@ const neueFirmaInvalid: Record<string, unknown> = {
 
 type MessageType = { message: string };
 
-// -----------------------------------------------------------------------------
-// T e s t s
-// -----------------------------------------------------------------------------
-// Test-Suite
+// Tests für POST /rest
 describe('POST /rest', () => {
     let token: string;
 
@@ -76,7 +71,7 @@ describe('POST /rest', () => {
         token = await getToken('admin', 'p');
     });
 
-    test('Neue Firma', async () => {
+    test('Neue Firma erfolgreich erstellen', async () => {
         // given
         const headers = new Headers();
         headers.append(CONTENT_TYPE, APPLICATION_JSON);
@@ -110,7 +105,7 @@ describe('POST /rest', () => {
         expect(FirmaService.ID_PATTERN.test(idStr ?? '')).toBe(true);
     });
 
-    test.concurrent('Neue Firma mit ungueltigen Daten', async () => {
+    test.concurrent('Neue Firma mit ungültigen Daten → 400', async () => {
         // given
         const headers = new Headers();
         headers.append(CONTENT_TYPE, APPLICATION_JSON);
@@ -146,7 +141,7 @@ describe('POST /rest', () => {
         expect(messages).toStrictEqual(expect.arrayContaining(expectedMsg));
     });
 
-    test.concurrent('Neue Firma, aber ohne Token', async () => {
+    test.concurrent('Neue Firma ohne Token → 401', async () => {
         // when
         const { status } = await fetch(restURL, {
             method: POST,
@@ -157,7 +152,7 @@ describe('POST /rest', () => {
         expect(status).toBe(HttpStatus.UNAUTHORIZED);
     });
 
-    test.concurrent('Neue Firma, aber mit falschem Token', async () => {
+    test.concurrent('Neue Firma mit ungültigem Token → 401', async () => {
         // given
         const headers = new Headers();
         headers.append(CONTENT_TYPE, APPLICATION_JSON);
