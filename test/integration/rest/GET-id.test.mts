@@ -3,18 +3,13 @@ import { HttpStatus } from '@nestjs/common';
 import { describe, expect, test } from 'vitest';
 import { CONTENT_TYPE, IF_NONE_MATCH, restURL } from '../constants.mjs';
 
-// -----------------------------------------------------------------------------
-// T e s t d a t e n
-// -----------------------------------------------------------------------------
+// Testdaten
 const ids = [10, 20];
 const idNichtVorhanden = 999999;
 const idsETag = [10, 20];
 const idFalsch = 'xy';
 
-// -----------------------------------------------------------------------------
-// T e s t s
-// -----------------------------------------------------------------------------
-// Test-Suite
+// Tests für GET /rest/:id
 describe('GET /rest/:id', () => {
     test.concurrent.each(ids)('Firma zu vorhandener ID %i', async (id) => {
         // given
