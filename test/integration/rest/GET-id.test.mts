@@ -39,7 +39,7 @@ describe('GET /rest/:id', () => {
         expect(status).toBe(HttpStatus.NOT_FOUND);
     });
 
-    test.concurrent('Keine Firma zu falscher ID', async () => {
+    test.concurrent('Keine Firma bei ungültigem ID-Format', async () => {
         // given
         const url = `${restURL}/${idFalsch}`;
 
@@ -51,12 +51,12 @@ describe('GET /rest/:id', () => {
     });
 
     test.concurrent.each(idsETag)(
-        'Firma zu ID %i mit If-None-Match',
+        'Firma zu ID %i – Not Modified bei If-None-Match',
         async (id) => {
             // given
             const url = `${restURL}/${id}`;
             const headers = new Headers();
-            headers.append(IF_NONE_MATCH, '"0"');
+            headers.append(IF_NONE_MATCH, '"0"'); // "0" erzwingt einen Vergleich, bei dem der ETag als identisch gilt → 304
 
             // when
             const response = await fetch(url, { headers });
