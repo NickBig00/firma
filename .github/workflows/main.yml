@@ -26,6 +26,10 @@ jobs:
 
       - name: Lint
         run: pnpm lint || true
-
+      - name: Create TLS dummy files
+        run: |
+          mkdir -p src/config/resources/tls
+          echo "dummy" > src/config/resources/tls/key.pem
+          echo "dummy" > src/config/resources/tls/certificate.crt
       - name: Run tests
         run: pnpm test
