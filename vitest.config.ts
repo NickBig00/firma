@@ -20,6 +20,10 @@ import { defineConfig } from 'vite';
 export default defineConfig({
     test: {
         name: 'Integration',
+          exclude: [
+            "**/src/config/node.ts",
+            "**/src/config/https.ts",
+        ],
         // default ist ['**\/*.{test,spec}.?(c|m)[jt]s?(x)']
         include: ['test/integration/**/*.test.mts'],
         globals: true,
