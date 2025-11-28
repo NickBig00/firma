@@ -110,14 +110,16 @@ export class FirmaWriteService {
             size,
         );
 
-
         let firmaFileCreated: FirmaFileCreated | undefined;
         await this.#prisma.$transaction(async (tx) => {
             const firma = tx.firma.findUnique({
                 where: { id: firmaId },
             });
             if (firma === null) {
-                this.#logger.debug('Es gibt keine Firma mit der ID %d', firmaId);
+                this.#logger.debug(
+                    'Es gibt keine Firma mit der ID %d',
+                    firmaId,
+                );
                 throw new NotFoundException(
                     `Es gibt keine Firma mit der ID ${firmaId}.`,
                 );
@@ -211,7 +213,6 @@ export class FirmaWriteService {
         this.#logger.debug('delete');
         return true;
     }
-
 
     async #sendmail({ id, name }: { id: number | 'N/A'; name: string }) {
         const subject = `Neue Firma ${id}`;

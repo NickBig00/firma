@@ -34,7 +34,9 @@ export class FirmaService {
 
     readonly #prisma: PrismaClient;
     readonly #whereBuilder: WhereBuilder;
-    readonly #includeGeschaeftsfuehrer: FirmaInclude = { geschaeftsfuehrer: true };
+    readonly #includeGeschaeftsfuehrer: FirmaInclude = {
+        geschaeftsfuehrer: true,
+    };
     readonly #includeGeschaeftsfuehrerundStandorte: FirmaInclude = {
         geschaeftsfuehrer: true,
         standorte: true,
@@ -56,7 +58,9 @@ export class FirmaService {
     async findById({
         id,
         mitStandorten = false,
-    }: FindByIdParams): Promise<Readonly<FirmaMitGeschaeftsfuehrerundStandorten>> {
+    }: FindByIdParams): Promise<
+        Readonly<FirmaMitGeschaeftsfuehrerundStandorten>
+    > {
         this.#logger.debug('findById: id=%d', id);
 
         const include = mitStandorten
@@ -69,7 +73,9 @@ export class FirmaService {
             });
         if (firma === null) {
             this.#logger.debug('Es gibt keine Firma mit der ID %d', id);
-            throw new NotFoundException(`Es gibt keine FIrma mit der ID ${id}.`);
+            throw new NotFoundException(
+                `Es gibt keine FIrma mit der ID ${id}.`,
+            );
         }
 
         this.#logger.debug('findById: firma=%o', firma);
@@ -137,12 +143,13 @@ export class FirmaService {
 
         const where = this.#whereBuilder.build(suchparameter);
         const { number, size } = pageable;
-        const firmen: FirmaMitGeschaeftsfuehrer[] = await this.#prisma.firma.findMany({
-            where,
-            skip: number * size,
-            take: size,
-            include: this.#includeGeschaeftsfuehrer,
-        });
+        const firmen: FirmaMitGeschaeftsfuehrer[] =
+            await this.#prisma.firma.findMany({
+                where,
+                skip: number * size,
+                take: size,
+                include: this.#includeGeschaeftsfuehrer,
+            });
         if (firmen.length === 0) {
             this.#logger.debug('find: Keine Firmen gefunden');
             throw new NotFoundException(
@@ -164,13 +171,16 @@ export class FirmaService {
         return count;
     }
 
-    async #findAll(pageable: Pageable): Promise<Readonly<Slice<FirmaMitGeschaeftsfuehrer>>> {
+    async #findAll(
+        pageable: Pageable,
+    ): Promise<Readonly<Slice<FirmaMitGeschaeftsfuehrer>>> {
         const { number, size } = pageable;
-        const firmen: FirmaMitGeschaeftsfuehrer[] = await this.#prisma.firma.findMany({
-            skip: number * size,
-            take: size,
-            include: this.#includeGeschaeftsfuehrer,
-        });
+        const firmen: FirmaMitGeschaeftsfuehrer[] =
+            await this.#prisma.firma.findMany({
+                skip: number * size,
+                take: size,
+                include: this.#includeGeschaeftsfuehrer,
+            });
         if (firmen.length === 0) {
             this.#logger.debug('#findAll: Keine Firmen gefunden');
             throw new NotFoundException(`Ungueltige Seite "${number}"`);
@@ -191,14 +201,12 @@ export class FirmaService {
         return firmaSlice;
     }
 
-       #checkKeys(keys: string[]) {
+    #checkKeys(keys: string[]) {
         this.#logger.debug('#checkKeys: keys=%o', keys);
         // Ist jeder Suchparameter auch eine Property von Firma oder "schlagwoerter"?
         let validKeys = true;
         keys.forEach((key) => {
-            if (
-                !suchparameterNamen.includes(key)
-            ) {
+            if (!suchparameterNamen.includes(key)) {
                 this.#logger.debug(
                     '#checkKeys: ungueltiger Suchparameter "%s"',
                     key,
@@ -209,5 +217,4 @@ export class FirmaService {
 
         return validKeys;
     }
-
 }

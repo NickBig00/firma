@@ -8,7 +8,6 @@ import { HttpException, HttpStatus } from '@nestjs/common';
  * @packageDocumentation
  */
 
-
 /**
  * Exception-Klasse für eine ungültige Versionsnummer beim Ändern.
  */

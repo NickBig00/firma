@@ -21,7 +21,7 @@ const neueFirma: Omit<FirmaDTO, 'gruendungsjahr' | 'umsatz'> & {
     name: 'Software GmbH & CO KG',
     gruendungsjahr: 2024,
     umsatz: 1500000.0,
-    branche: "Softwareentwicklung",
+    branche: 'Softwareentwicklung',
     mitarbeiteranzahl: 30,
     homepage: 'https://software-gmbh.de',
     geschaeftsfuehrer: {
@@ -36,13 +36,14 @@ const neueFirma: Omit<FirmaDTO, 'gruendungsjahr' | 'umsatz'> & {
             ort: 'Schramberg',
             land: 'Deutschland',
         },
-    ]
+    ],
 };
 const neueFirmaInvalid: Record<string, unknown> = {
     name: 'A', // zu kurz
     gruendungsjahr: 1700, // zu alt
     umsatz: -1000.0, // negativ
-    branche: 'vielzulangerbranchennamederfirmaistdasaufjedenfalldeinfintinininfini', // zu lang
+    branche:
+        'vielzulangerbranchennamederfirmaistdasaufjedenfalldeinfintinininfini', // zu lang
     mitarbeiteranzahl: -5, // negativ
     homepage: 'not valid url', // keine URL
     geschaeftsfuehrer: {
@@ -57,9 +58,8 @@ const neueFirmaInvalid: Record<string, unknown> = {
             ort: '', // leer
             land: '', // leer
         },
-    ]
+    ],
 };
-
 
 type MessageType = { message: string };
 

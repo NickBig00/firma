@@ -21,7 +21,6 @@ export type SuchparameterInput = {
     readonly suchparameter: Suchparameter;
 };
 
-
 @Resolver('Firma')
 @UseFilters(HttpExceptionFilter)
 @UseInterceptors(ResponseTimeInterceptor)

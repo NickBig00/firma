@@ -20,16 +20,20 @@ import { KeycloakModule } from './security/keycloak/module.js';
         // Umgebungsvariable DATABASE_URL fuer PrismaPg
         ConfigModule,
         DevModule,
-       // GraphQLModule.forRoot<ApolloDriverConfig>(graphQlModuleOptions),
+        // GraphQLModule.forRoot<ApolloDriverConfig>(graphQlModuleOptions),
         LoggerModule,
         KeycloakModule,
     ],
 })
-
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
         consumer
             .apply(RequestLoggerMiddleware)
-            .forRoutes(FirmaController, FirmaWriteController, 'auth', 'graphql');
+            .forRoutes(
+                FirmaController,
+                FirmaWriteController,
+                'auth',
+                'graphql',
+            );
     }
 }

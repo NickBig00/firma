@@ -20,41 +20,45 @@ const geaenderteFirma: Omit<FirmaDtoOhneRef, 'gruendungsjahr' | 'umsatz'> & {
     name: 'TechVision AG',
     gruendungsjahr: 2024,
     umsatz: 2500000.0,
-    branche: "Softwareentwicklung/ Consulting",
+    branche: 'Softwareentwicklung/ Consulting',
     mitarbeiteranzahl: 60,
-    homepage: 'https://software-gmbh.de'
+    homepage: 'https://software-gmbh.de',
 };
 const idVorhanden = '30';
 
-const geaenderteFirmaIdNichtVorhanden: Omit<FirmaDtoOhneRef, 'gruendungsjahr' | 'umsatz'> & {
+const geaenderteFirmaIdNichtVorhanden: Omit<
+    FirmaDtoOhneRef,
+    'gruendungsjahr' | 'umsatz'
+> & {
     gruendungsjahr: number;
     umsatz: number;
 } = {
     name: 'TechVision GmbH',
     gruendungsjahr: 2024,
     umsatz: 2500000.0,
-    branche: "Softwareentwicklung/ Consulting",
+    branche: 'Softwareentwicklung/ Consulting',
     mitarbeiteranzahl: 60,
-    homepage: 'https://software-gmbh.de'
+    homepage: 'https://software-gmbh.de',
 };
 const idNichtVorhanden = '999999';
 
 const geaenderteFirmaInvalid: Record<string, unknown> = {
     name: 'A', // zu kurz
-    branche: 'vielzulangerbranchennamederfirmaistdasaufjedenfalldeinfintinininfini', // zu lang
+    branche:
+        'vielzulangerbranchennamederfirmaistdasaufjedenfalldeinfintinininfini', // zu lang
     mitarbeiteranzahl: -2,
     homepage: 'not valid url', // keine URL
     gruendungsjahr: 1700, // zu alt
-    umsatz: -1000
+    umsatz: -1000,
 };
 
 const veralteteFirma: FirmaDtoOhneRef = {
     name: 'TechVision AG',
-    branche: "Softwareentwicklung/ Consulting",
+    branche: 'Softwareentwicklung/ Consulting',
     mitarbeiteranzahl: 60,
     homepage: 'https://software-gmbh.de',
     gruendungsjahr: 2022,
-    umsatz: 100000
+    umsatz: 100000,
 };
 
 // -----------------------------------------------------------------------------

@@ -44,7 +44,6 @@ import { FirmaDTO, FirmaDtoOhneRef } from './firma-dto.js';
 import { createBaseUri } from './create-base-uri.js';
 import { InvalidMimeTypeException } from './exceptions.js';
 
-
 const MSG_FORBIDDEN = 'Kein Token mit ausreichender Berechtigung vorhanden';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -59,7 +58,6 @@ const MULTER_OPTIONS: MulterOptions = {
         cb(null, true);
     },
 };
-
 
 /**
  * Die Controller-Klasse für die Verwaltung von Firmen.
@@ -90,7 +88,11 @@ export class FirmaWriteController {
     @ApiCreatedResponse({ description: 'Erfolgreich neu angelegt' })
     @ApiBadRequestResponse({ description: 'Fehlerhafte Firmendaten' })
     @ApiForbiddenResponse({ description: MSG_FORBIDDEN })
-    async post(@Body() firmaDTO: FirmaDTO, @Req() req: Request, @Res() res: Response) {
+    async post(
+        @Body() firmaDTO: FirmaDTO,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
         this.#logger.debug('post: firmaDTO=%o', firmaDTO);
 
         const firma = this.#dtoToFirmaCreate(firmaDTO);
@@ -118,7 +120,9 @@ export class FirmaWriteController {
     @Roles('admin', 'user')
     @UseInterceptors(FileInterceptor('file', MULTER_OPTIONS))
     @HttpCode(HttpStatus.NO_CONTENT)
-    @ApiOperation({ summary: 'Binärdatei (z. B. Logo) zu einer Firma hochladen' })
+    @ApiOperation({
+        summary: 'Binärdatei (z. B. Logo) zu einer Firma hochladen',
+    })
     @ApiParam({
         name: 'id',
         description: 'ID der Firma, zu der eine Datei hinzugefügt werden soll',
@@ -127,20 +131,25 @@ export class FirmaWriteController {
     @ApiCreatedResponse({ description: 'Datei erfolgreich hinzugefügt' })
     @ApiBadRequestResponse({ description: 'Fehlerhafte Datei' })
     async addFile(
-        @Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_FOUND })) id: number,
+        @Param(
+            'id',
+            new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_FOUND }),
+        )
+        id: number,
         @UploadedFile() file: Express.Multer.File,
         @Req() req: Request,
         @Res() res: Response,
     ): Promise<Response> {
         const { buffer, originalname, size } = file;
-        this.#logger.debug('addFile: id=%d, filename=%s, size=%s', id, originalname, size);
-
-        const firmaFile: FirmaFileCreated | undefined = await this.#service.addFile(
+        this.#logger.debug(
+            'addFile: id=%d, filename=%s, size=%s',
             id,
-            buffer,
             originalname,
             size,
         );
+
+        const firmaFile: FirmaFileCreated | undefined =
+            await this.#service.addFile(id, buffer, originalname, size);
         this.#logger.debug(
             'addFile: id=%d, byteLength=%d, filename=%s, mimetype=%s',
             firmaFile?.id ?? -1,
@@ -184,19 +193,33 @@ export class FirmaWriteController {
         example: 2,
     })
     @ApiNoContentResponse({ description: 'Erfolgreich aktualisiert' })
-    @ApiPreconditionFailedResponse({ description: 'Falsche Version im Header "If-Match"' })
+    @ApiPreconditionFailedResponse({
+        description: 'Falsche Version im Header "If-Match"',
+    })
     @ApiForbiddenResponse({ description: MSG_FORBIDDEN })
     async put(
         @Body() firmaDTO: FirmaDtoOhneRef,
-        @Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_FOUND })) id: number,
+        @Param(
+            'id',
+            new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_FOUND }),
+        )
+        id: number,
         @Headers('If-Match') version: string | undefined,
         @Res() res: Response,
     ): Promise<Response> {
-        this.#logger.debug('put: id=%d, firmaDTO=%o, version=%s', id, firmaDTO, version ?? 'undefined');
+        this.#logger.debug(
+            'put: id=%d, firmaDTO=%o, version=%s',
+            id,
+            firmaDTO,
+            version ?? 'undefined',
+        );
 
         if (version === undefined) {
             const msg = 'Header "If-Match" fehlt';
-            return res.status(HttpStatus.PRECONDITION_REQUIRED).set('Content-Type', 'application/json').send(msg);
+            return res
+                .status(HttpStatus.PRECONDITION_REQUIRED)
+                .set('Content-Type', 'application/json')
+                .send(msg);
         }
 
         const firma = this.dtoToFirmaUpdate(firmaDTO);
@@ -253,12 +276,19 @@ export class FirmaWriteController {
             },
             standorte: {
                 create:
-                    dto.standorte?.map((s: { adresse: string; plz: string; ort: string; land: string }) => ({
-                        adresse: s.adresse,
-                        plz: s.plz,
-                        ort: s.ort,
-                        land: s.land,
-                    })) ?? [],
+                    dto.standorte?.map(
+                        (s: {
+                            adresse: string;
+                            plz: string;
+                            ort: string;
+                            land: string;
+                        }) => ({
+                            adresse: s.adresse,
+                            plz: s.plz,
+                            ort: s.ort,
+                            land: s.land,
+                        }),
+                    ) ?? [],
             },
         };
         return firma;

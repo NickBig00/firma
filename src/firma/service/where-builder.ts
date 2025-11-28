@@ -4,7 +4,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import {Prisma } from '../../generated/prisma/client.js';
+import { Prisma } from '../../generated/prisma/client.js';
 import { type FirmaWhereInput } from '../../generated/prisma/models/Firma.js';
 import { getLogger } from '../../logger/logger.js';
 import { type Suchparameter } from './suchparameter.js';
@@ -33,10 +33,7 @@ export class WhereBuilder {
     // "rest properties" ab ES 2018 https://github.com/tc39/proposal-object-rest-spread
     // eslint-disable-next-line max-lines-per-function, prettier/prettier, sonarjs/cognitive-complexity
     build(suchparameter: Suchparameter) {
-        this.#logger.debug(
-            'build: suchparameter=%o',
-            suchparameter,
-        );
+        this.#logger.debug('build: suchparameter=%o', suchparameter);
 
         let where: FirmaWhereInput = {};
 
@@ -68,18 +65,16 @@ export class WhereBuilder {
                     break;
                 }
                 case 'mitarbeiterzahl':
-                    where.mitarbeiteranzahl =  Number.parseInt(value as string);
+                    where.mitarbeiteranzahl = Number.parseInt(value as string);
                     break;
                 case 'gruendungsjahr':
-                    where.gruendungsjahr =  Number.parseInt(value as string);
+                    where.gruendungsjahr = Number.parseInt(value as string);
                     break;
                 case 'homepage':
                     where.homepage = { equals: value as string };
                     break;
             }
         });
-
-
 
         this.#logger.debug('build: where=%o', where);
         return where;
