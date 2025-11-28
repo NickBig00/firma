@@ -1,64 +1,60 @@
-' Copyright (C) 2019 - present Juergen Zimmermann, Hochschule Karlsruhe
-'
-' This program is free software: you can redistribute it and/or modify
-' it under the terms of the GNU General Public License as published by
-' the Free Software Foundation, either version 3 of the License, or
-' (at your option) any later version.
-'
-' This program is distributed in the hope that it will be useful,
-' but WITHOUT ANY WARRANTY; without even the implied warranty of
-' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-' GNU General Public License for more details.
-'
-' You should have received a copy of the GNU General Public License
-' along with this program.  If not, see <https://www.gnu.org/licenses/>.
+' Preview: Alt + D  (z. B. in VS Code)
 
-' Preview durch <Alt>d
+@startuml ER Diagramm: Firma
 
-@startuml ER Diagramm
-
-' hide the spot
 hide circle
-
-' evtl. Prbleme mit Kraehenfuessen vermeiden
 skinparam linetype ortho
 
-entity "Buch" {
-  * id: integer <<generated>>
-  --
-  * version: integer
-  * isbn: text
-  * rating: number
-  * art: text
-  * preis: number
-  * rabatt: number
-  * lieferbar: boolean
-    datum: date
-    homepage: text
-  * **titel_id**: integer <<FK>>
-    schlagwoerter: text
-  * erzeugt: timestamp
-  * aktualisiert: timestamp
+entity "Firma" {
+
+id: integer <<generated>>--
+version: integer
+name: text
+gruendungsjahr: integer
+branche: text
+mitarbeiteranzahl: integer
+umsatz: decimal(12,2)
+homepage: text
+erzeugt: timestamp
+aktualisiert: timestamp
 }
 
-entity "Titel" {
-  * id: integer <<generated>>
-  --
-  * titel: text
-    untertitel: text
+entity "Geschaeftsfuehrer" {
+
+id: integer <<generated>>--
+name: text
+email: text
+telefon: text
+firma_id: integer <<FK>>
+erzeugt: timestamp
+aktualisiert: timestamp
 }
 
-entity "Abbildung" {
-  * id: integer <<generated>>
-  --
-  * beschriftung: text
-    contentType: text
-  * **buch_id**: integer <<FK>>
+entity "Standort" {
+
+id: integer <<generated>>--
+adresse: text
+plz: text
+ort: text
+land: text
+firma_id: integer <<FK>>
+erzeugt: timestamp
+aktualisiert: timestamp
 }
 
-Buch ||..|| Titel
-Buch ||..o{ Abbildung
+entity "Firma_File" {
 
-footer (c) Jürgen Zimmermann
+id: integer <<generated>>--
+data: bytea
+filename: text
+mimetype: text
+firma_id: integer <<FK>>
+}
+
+' Beziehungen
+Firma -- Geschaeftsfuehrer : "1 : 1"
+Firma --o{ Standort : "1 : n"
+Firma --|| Firma_File : "1 : 1"
+
 
 @enduml
