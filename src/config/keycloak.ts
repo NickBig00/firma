@@ -65,7 +65,7 @@ if (keycloak !== undefined && keycloak !== null) {
 }
 
 const schema = (keycloak?.schema as string | undefined) ?? 'https';
-const host = (keycloak?.host as string | undefined) ?? 'keycloak';
+const host = (keycloak?.host as string | undefined) ?? 'localhost';
 const port = (keycloak?.port as number | undefined) ?? 8443;
 const authServerUrl = `${schema}://${host}:${port}`;
 // Keycloak ist in Sicherheits-Bereich (= realms) unterteilt

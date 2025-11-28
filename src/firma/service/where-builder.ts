@@ -32,21 +32,17 @@ export class WhereBuilder {
      */
     // "rest properties" ab ES 2018 https://github.com/tc39/proposal-object-rest-spread
     // eslint-disable-next-line max-lines-per-function, prettier/prettier, sonarjs/cognitive-complexity
-    build({
-        name,
-        ...restProps
-    }: Suchparameter) {
+    build(suchparameter: Suchparameter) {
         this.#logger.debug(
-            'build: name=%s, restProps=%o',
-            name ?? 'undefined',
-            restProps,
+            'build: suchparameter=%o',
+            suchparameter,
         );
 
         let where: FirmaWhereInput = {};
 
         // Properties vom Typ number, enum, boolean, Date
         // diverse Vergleiche, z.B. Gleichheit, <= (lte), >= (gte)
-        Object.entries(restProps).forEach(([key, value]) => {
+        Object.entries(suchparameter).forEach(([key, value]) => {
             switch (key) {
                 case 'geschaeftsfuehrer':
                     where.geschaeftsfuehrer = {
@@ -61,10 +57,13 @@ export class WhereBuilder {
                 case 'branche':
                     where.branche = { equals: value as string };
                     break;
+                case 'name':
+                    where.name = { equals: value as string };
+                    break;
                 case 'umsatz': {
                     const umsatzNumber = Number.parseInt(value as string);
                     if (!Number.isNaN(umsatzNumber)) {
-                        where.umsatz = umsatzNumber;
+                        where.umsatz = { gte: umsatzNumber };
                     }
                     break;
                 }

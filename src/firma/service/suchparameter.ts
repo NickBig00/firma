@@ -6,6 +6,7 @@ export type Suchparameter = {
   readonly mitarbeiteranzahl?: number | string;
   readonly umsatz?: number | string;
   readonly homepage?: string;
+  readonly geschaeftsfuehrer?: string;
 };
 
 export const suchparameterNamen = [
@@ -16,4 +17,5 @@ export const suchparameterNamen = [
   'mitarbeiteranzahl',
   'umsatz',
   'homepage',
+  'geschaeftsfuehrer',
 ];
