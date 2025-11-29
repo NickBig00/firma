@@ -1,0 +1,120 @@
+// Copyright (C) 2025
+//
+// Dieses Projekthandbuch darf gemäß den Bedingungen der GNU General Public License (GPL) v3 genutzt und verändert werden.
+// Siehe: https://www.gnu.org/licenses/gpl-3.0.html
+
+= Projekthandbuch: Firma-Management-System
+Autor <autor@example.com>
+:doctype: book
+:toc: left
+:sectanchors:
+:sectlinks:
+:sectnums:
+:source-highlighter: highlight.js
+:icons: font
+:kroki-server-url: https://kroki.io
+:kroki-fetch-diagram:
+
+IMPORTANT: Dieses Projekthandbuch dokumentiert die Architektur, die Entitäten und das Datenmodell der Anwendung *Firma-Management-System*. +
+           Die Anwendung verwaltet Firmen, Geschäftsführer, Standorte und zugehörige Dateien.
+
+== Systemübersicht
+
+Das *Firma-Management-System* ist eine Webanwendung, die Unternehmensdaten zentral verwaltet.
+Die Kernfunktionen umfassen die Pflege von Stammdaten (Firma), das Erfassen mehrerer Standorte, die Zuordnung eines Geschäftsführers sowie das Speichern von firmenspezifischen Dateien.
+
+.Systemarchitektur
+[plantuml, system-architektur, svg]
+----
+@startuml
+package "Frontend" {
+  [React App]
+}
+
+package "Backend" {
+  [REST API]
+  [GraphQL API]
+  [Business Logic]
+}
+
+package "Datenbank" {
+  [PostgreSQL]
+}
+
+[React App] --> [REST API]
+[REST API] --> [Business Logic]
+[Business Logic] --> [PostgreSQL]
+@enduml
+----
+
+== Geschäftslogik und Datenmodell
+
+Die Geschäftslogik bildet die zentrale Steuerung der Anwendung.
+Sie validiert Benutzereingaben, verwaltet Beziehungen zwischen Entitäten und delegiert Datenzugriffe an die Repository-Schicht.
+
+.Service-Klassen im Überblick
+[plantuml, firma-services, svg]
+----
+@startuml
+class FirmaService {
+  + createFirma()
+  + updateFirma()
+  + deleteFirma()
+  + addStandort()
+  + assignGeschaeftsfuehrer()
+}
+
+class StandortService {
+  + createStandort()
+  + updateStandort()
+  + deleteStandort()
+}
+
+class GeschaeftsfuehrerService {
+  + createGeschaeftsfuehrer()
+  + updateGeschaeftsfuehrer()
+}
+
+FirmaService --> StandortService
+FirmaService --> GeschaeftsfuehrerService
+@enduml
+----
+
+=== ER-Diagramm
+
+Das folgende Diagramm zeigt das zugrunde liegende Entity-Relationship-Modell der Anwendung.
+
+.ER-Diagramm: Firma
+[plantuml, ER-Diagramm-Firma, svg]
+----
+include::ER-Diagramm.plantuml[]
+----
+
+== REST-Schnittstelle
+
+Die Anwendung stellt eine REST-Schnittstelle bereit, die CRUD-Operationen auf allen Entitäten unterstützt.
+
+.Controller-Übersicht
+[plantuml, rest-controller, svg]
+----
+@startuml
+interface FirmaController
+interface StandortController
+interface GeschaeftsfuehrerController
+interface FirmaFileController
+
+FirmaController : +GET /firmen
+FirmaController : +POST /firmen
+FirmaController : +PUT /firmen/{id}
+FirmaController : +DELETE /firmen/{id}
+@enduml
+----
+
+== Programmierrichtlinien
+
+Für die Entwicklung mit *TypeScript* sind folgende Richtlinien empfehlenswert:
+
+[horizontal]
+_Google Styleguide_:: https://google.github.io/styleguide/tsguide.html
+_Microsoft Guidelines_:: https://github.com/Microsoft/TypeScript/wiki/Coding-guidelines
+_Angular Styleguide_:: https://angular.io/docs/ts/latest/guide/style-guide.html
