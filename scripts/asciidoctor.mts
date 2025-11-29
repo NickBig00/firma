@@ -1,45 +1,54 @@
-/*
- * Asciidoctor-Skript zur Generierung des UML-Diagramms (Firma)
- * Basierend auf dem Beispiel von Juergen Zimmermann, HKA
- */
-
 import asciidoctor from '@asciidoctor/core';
 import kroki from 'asciidoctor-kroki';
 import { join } from 'node:path';
 import url from 'node:url';
 
+// Asciidoctor initialisieren
 const adoc = asciidoctor();
 console.log(`Asciidoctor.js Version: ${adoc.getVersion()}`);
 
-// Kroki-Erweiterung aktivieren (für PlantUML)
+// Kroki-Erweiterung aktivieren (für PlantUML & andere Diagramme)
 kroki.register(adoc.Extensions);
 
-// __dirname-Workaround für ES-Module
+// __dirname für ES-Module
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
-// Optionen für die Umwandlung
+// Konfigurationsoptionen
 const options = {
+    // Sicherheitsstufe: "safe" erlaubt Includes innerhalb des Projekts
     safe: 'safe',
+
+    // Attribute beeinflussen die Asciidoctor-Verarbeitung
     attributes: {
-        linkcss: true,
-        // Diese Attribute aktivieren PlantUML über Kroki
-        'kroki-server-url': 'https://kroki.io',
-        'kroki-fetch-diagram': true,
+        linkcss: true, // CSS-Link statt Inline-Styling
+        'kroki-server-url': 'https://kroki.io', // oder 'http://localhost:8000' bei lokalem Server
+        'kroki-fetch-diagram': true,            // Diagramme direkt einbetten
+        icons: 'font',                          // FontAwesome-Icons aktivieren
+        toc: 'left',                            // Inhaltsverzeichnis links anzeigen
+        sectanchors: '',                        // Anker für jede Überschrift
+        sectnums: '',                           // Nummerierte Kapitel
     },
-    base_dir: join(__dirname, '..', 'uml'),
-    to_dir: join(__dirname, '..', 'uml', 'html'),
-    mkdirs: true,
+
+    // Arbeitsverzeichnisse
+    base_dir: join(__dirname, '..', '.extras', 'doc', 'projekthandbuch'), // wo projekthandbuch.adoc liegt
+    to_dir: join(__dirname, '..', '.extras', 'doc', 'projekthandbuch', 'html'), // Ausgabeziel
+    mkdirs: true, // Unterordner automatisch anlegen
 };
 
-// Quelle: UML.adoc → Ziel: UML.html
-adoc.convertFile(join(__dirname, '..', 'uml', 'uml.adoc'), options);
+// eigentliche Konvertierung
+adoc.convertFile(
+    join(__dirname, '..', '.extras', 'doc', 'projekthandbuch', 'projekthandbuch.adoc'),
+    options,
+);
 
 console.log(
-    `HTML-Datei generiert unter: ${join(
+    `✅ HTML-Datei wurde generiert unter: ${join(
         __dirname,
         '..',
-        'uml',
+        '.extras',
+        'doc',
+        'projekthandbuch',
         'html',
-        'uml.html',
+        'projekthandbuch.html',
     )}`,
 );
