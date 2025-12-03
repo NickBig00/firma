@@ -1,22 +1,10 @@
-// Copyright (C) 2019 - present Juergen Zimmermann, Hochschule Karlsruhe
+// Copyright (C) 2025
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// Dieses Projekthandbuch darf gemäß den Bedingungen der GNU General Public License (GPL) v3 genutzt und verändert werden.
+// Siehe: https://www.gnu.org/licenses/gpl-3.0.html
 
-// Preview durch <Strg><Shift>v
-
-= Projekthandbuch
-Jürgen Zimmermann <Juergen.Zimmermann@h-ka.de>
+= Projekthandbuch: Firma-Management-System
+Autor <autor@example.com>
 :doctype: book
 :toc: left
 :sectanchors:
@@ -24,139 +12,109 @@ Jürgen Zimmermann <Juergen.Zimmermann@h-ka.de>
 :sectnums:
 :source-highlighter: highlight.js
 :icons: font
-// :kroki-server-url: https://kroki.io
+:kroki-server-url: https://kroki.io
+:kroki-fetch-diagram:
 
-// https://github.com/asciidoctor/asciidoctorj
-// https://github.com/asciidoctor/asciidoctor-diagram
-// http://de.plantuml.com/classes.html
-// http://de.plantuml.com/component.html
-// https://github.com/odrotbohm/asciidoctor-plantuml
+IMPORTANT: Dieses Projekthandbuch dokumentiert die Architektur, die Entitäten und das Datenmodell der Anwendung *Firma-Management-System*. +
+           Die Anwendung verwaltet Firmen, Geschäftsführer, Standorte und zugehörige Dateien.
 
-IMPORTANT: Copyright (C) 2020 - present Jürgen Zimmermann, Hochschule Karlsruhe. +
-           Free use of this software is granted under the terms of the
-           GNU General Public License (GPL) v3. +
-           For the full text of the license, see the http://www.gnu.org/licenses/gpl-3.0.html[license] file.
+== Systemübersicht
 
-== Der Applikationsserver
+Das *Firma-Management-System* ist eine Webanwendung, die Unternehmensdaten zentral verwaltet.
+Die Kernfunktionen umfassen die Pflege von Stammdaten (Firma), das Erfassen mehrerer Standorte, die Zuordnung eines Geschäftsführers sowie das Speichern von firmenspezifischen Dateien.
 
-=== Der Applikationsserver im Überblick
-
-Sed porttitor lectus nibh. Nulla porttitor accumsan tincidunt.
-
-.Use Cases
-[plantuml,use-cases,svg]
+.Systemarchitektur
+[plantuml, system-architektur, svg]
 ----
-include::use-cases.plantuml[]
-----
+@startuml
+package "Frontend" {
+  [React App]
+}
 
-Quisque velit nisi, pretium ut lacinia in, elementum id enim. Nulla porttitor
-accumsan tincidunt.
+package "Backend" {
+  [REST API]
+  [GraphQL API]
+  [Business Logic]
+}
 
-.Komponentendiagramm
-[plantuml,komponenten,svg]
-----
-include::komponenten.plantuml[]
-----
+package "Datenbank" {
+  [PostgreSQL]
+}
 
-=== Die REST-Schnittstelle
-
-Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia
-Curae; Donec velit neque, auctor sit amet aliquam vel, ullamcorper sit amet
-ligula. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere
-cubilia Curae; Donec velit neque, auctor sit amet aliquam vel, ullamcorper sit
-amet ligula.
-
-."BuchGetController" für Lesezugriffe an der REST-Schnittstelle
-[plantuml,BuchGetController,svg]
-----
-include::BuchGetController.plantuml[]
+[React App] --> [REST API]
+[REST API] --> [Business Logic]
+[Business Logic] --> [PostgreSQL]
+@enduml
 ----
 
-Curabitur arcu erat, accumsan id imperdiet et, porttitor at sem. Donec
-sollicitudin molestie malesuada.
+== Geschäftslogik und Datenmodell
 
-."Sequenzdiagramm" mit den Methodenaufrufen
-[plantuml,sequenzdiagramm,svg]
+Die Geschäftslogik bildet die zentrale Steuerung der Anwendung.
+Sie validiert Benutzereingaben, verwaltet Beziehungen zwischen Entitäten und delegiert Datenzugriffe an die Repository-Schicht.
+
+.Service-Klassen im Überblick
+[plantuml, firma-services, svg]
 ----
-include::sequenzdiagramm.plantuml[]
-----
+@startuml
+class FirmaService {
+  + createFirma()
+  + updateFirma()
+  + deleteFirma()
+  + addStandort()
+  + assignGeschaeftsfuehrer()
+}
 
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod
-tempor invidunt ut.
+class StandortService {
+  + createStandort()
+  + updateStandort()
+  + deleteStandort()
+}
 
-."BuchWriteController" für Schreibzugriffe an der REST-Schnittstelle
-[plantuml,BuchGetController,svg]
-----
-include::BuchWriteController.plantuml[]
-----
+class GeschaeftsfuehrerService {
+  + createGeschaeftsfuehrer()
+  + updateGeschaeftsfuehrer()
+}
 
-=== Die GraphQL-Schnittstelle
-
-Donec sollicitudin molestie malesuada. Donec rutrum congue leo eget malesuada.
-
-.BuchQueryResolver für Lesezugriffe an der GraphQL-Schnittstelle
-[plantuml,BuchQueryResolver,svg]
-----
-include::BuchQueryResolver.plantuml[]
-----
-
-Donec sollicitudin molestie malesuada. Praesent sapien massa, convallis a
-pellentesque nec, egestas non nisi.
-
-.BuchMutationResolver für Schreibzugriffe an der GraphQL-Schnittstelle
-[plantuml,BuchMutationResolver,svg]
-----
-include::BuchMutationResolver.plantuml[]
-----
-
-=== Die Geschäftslogik
-
-Donec rutrum congue leo eget malesuada. Donec rutrum congue leo eget malesuada.
-
-."BuchReadService" von der Geschäftslogik
-[plantuml,BuchReadService,svg]
-----
-include::BuchReadService.plantuml[]
-----
-
-Pellentesque in ipsum id orci porta dapibus. Donec rutrum congue leo eget
-malesuada.
-
-."BuchWriteService" von der Geschäftslogik
-[plantuml,BuchWriteService,svg]
-----
-include::BuchWriteService.plantuml[]
-----
-
-=== Klasse für Entities
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur arcu erat,
-accumsan id imperdiet et, porttitor at sem.
-
-.Entity
-[plantuml,Buch,svg]
-----
-include::Buch.plantuml[]
+FirmaService --> StandortService
+FirmaService --> GeschaeftsfuehrerService
+@enduml
 ----
 
 === ER-Diagramm
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+Das folgende Diagramm zeigt das zugrunde liegende Entity-Relationship-Modell der Anwendung.
 
-.ER-Diagramm
-[plantuml,ER-Diagramm,svg]
+.ER-Diagramm: Firma
+[plantuml, ER-Diagramm-Firma, svg]
 ----
 include::ER-Diagramm.plantuml[]
 ----
 
-== Programmierrichtlinien für TypeScript und JavaScript
+== REST-Schnittstelle
 
-Für die Programmierung mit *TypeScript* und *JavaScript* sind folgende
-Styleguides empfehlenswert:
+Die Anwendung stellt eine REST-Schnittstelle bereit, die CRUD-Operationen auf allen Entitäten unterstützt.
+
+.Controller-Übersicht
+[plantuml, rest-controller, svg]
+----
+@startuml
+interface FirmaController
+interface StandortController
+interface GeschaeftsfuehrerController
+interface FirmaFileController
+
+FirmaController : +GET /firmen
+FirmaController : +POST /firmen
+FirmaController : +PUT /firmen/{id}
+FirmaController : +DELETE /firmen/{id}
+@enduml
+----
+
+== Programmierrichtlinien
+
+Für die Entwicklung mit *TypeScript* sind folgende Richtlinien empfehlenswert:
 
 [horizontal]
-_E-Book zu TypeScript_:: https://github.com/gibbok/typescript-book
-_Google_:: https://google.github.io/styleguide/tsguide.html
-_React bei AirbnB_:: https://github.com/airbnb/javascript/tree/master/react
-_Angular_:: https://angular.io/docs/ts/latest/guide/style-guide.html
-_Microsoft_:: https://github.com/Microsoft/TypeScript/wiki/Coding-guidelines
+_Google Styleguide_:: https://google.github.io/styleguide/tsguide.html
+_Microsoft Guidelines_:: https://github.com/Microsoft/TypeScript/wiki/Coding-guidelines
+_Angular Styleguide_:: https://angular.io/docs/ts/latest/guide/style-guide.html
