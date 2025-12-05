@@ -52,4 +52,3 @@ console.log(
         'projekthandbuch.html',
     )}`,
 );
-
